@@ -6,18 +6,27 @@ const bcrypt = require('bcrypt');
 const cors = require('cors');
 const MySQLStore = require('express-mysql-session')(session);
 const mailjet = require('node-mailjet');
-const WebSocket = require('ws'); 
+const mqtt = require('mqtt');
+
+const mqttHost = 'mqtt://192.168.137.91'; 
+const mqttPort = 1883; 
+const mqttTopic = 'sensor/data'; 
 
 const client = mailjet.apiConnect(
     '22a0bc71b4589e0eee7501bc18b783cd',  
     '2178197b69175dadf0c6d8a1229a20e4'   
 );
 
+const clientMqtt = mqtt.connect(mqttHost, {
+    port: mqttPort,
+    clientId: 'NodeJSClient',
+    clean: true,
+});
+
 const app = express();
 const port = 3000;
 
-const port_websocket = 8080;
-const wss = new WebSocket.Server({ port: port_websocket});
+let mqttData = {};
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -38,8 +47,60 @@ app.use(session({
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 } 
+  cookie: { maxAge: 1000 * 60 * 60 * 24 },
 }));
+
+clientMqtt.on('connect', () => {
+    console.log('Connected to MQTT Broker');
+    // สมัครสมาชิก Topic
+    clientMqtt.subscribe(mqttTopic, (err) => {
+      if (err) {
+        console.error(`Failed to subscribe to topic ${mqttTopic}:`, err);
+      } else {
+        console.log(`Subscribed to topic: ${mqttTopic}`);
+      }
+    });
+});  
+
+clientMqtt.on('message', (topic, message) => {
+    console.log(`Message received from topic ${topic}:`);
+    try {
+        const mqttData = JSON.parse(message.toString());
+        console.log('MQTT Data:', mqttData);
+    
+      } catch (error) {
+        console.error('Error parsing message:', error);
+      }
+});  
+
+clientMqtt.on('error', (err) => {
+    console.error('MQTT Error:', err);
+});
+
+// app.get('/api/data', (req, res) => {
+//     const device_id = req.query.device_id;
+//     if (!device_id) {
+//       return res.status(400).json({ error: 'Device ID is required' });
+//     }
+  
+//     const query = `
+//       SELECT 
+//         target_front_temp, 
+//         target_back_temp, 
+//         target_humidity 
+//       FROM devices 
+//       WHERE device_id = ?`;
+  
+//     pool.query(query, [device_id], (err, results) => {
+//       if (err) {
+//         return res.status(500).json({ error: 'Database query error', details: err.message });
+//       }
+//       if (results.length === 0) {
+//         return res.status(404).json({ error: 'Device ID not found' });
+//       }
+//       res.json(results[0]);
+//     });
+// });
 
 // ฟังก์ชันสำหรับสร้าง OTP แบบสุ่ม
 function generateOTP() {
@@ -123,7 +184,7 @@ app.post('/login', async (req, res) => {
 
     try {
         const [rows] = await pool.promise().query(
-            'SELECT id, password FROM users WHERE email = ? OR phone_number = ?',
+            'SELECT user_id, password FROM users WHERE email = ? OR phone_number = ?',
             [emailOrPhone, emailOrPhone]
         );
 
@@ -197,7 +258,7 @@ app.get('/profile', async (req, res) => {
 
 app.get('/profile/:userId', async (req, res) => {
     const userId = req.params.userId;
-    const sql = 'SELECT name, surname, email, phone_number FROM users WHERE id = ?';
+    const sql = 'SELECT name, surname, email, phone_number FROM users WHERE user_id = ?';
     pool.query(sql, [userId], (err, results) => {
         if (err) {
             console.error('Database query error:', err);
@@ -220,7 +281,7 @@ app.put('/profile/:userId', async (req, res) => {
     }
 
     try {
-        const query = 'UPDATE users SET name = ?, surname = ?, email = ?, phone_number = ? WHERE id = ?';
+        const query = 'UPDATE users SET name = ?, surname = ?, email = ?, phone_number = ? WHERE user_id = ?';
         const [result] = await pool.promise().query(query, [name, surname, email, phone, userId]);
 
         // ตรวจสอบว่ามีการอัปเดตข้อมูลจริงหรือไม่
@@ -240,7 +301,7 @@ app.post('/change-password', (req, res) => {
     const { userId, currentPassword, newPassword } = req.body;
   
     // ตรวจสอบผู้ใช้ในฐานข้อมูลจาก id
-    const query = 'SELECT * FROM users WHERE id = ?';
+    const query = 'SELECT * FROM users WHERE user_id = ?';
     pool.query(query, [userId], (err, results) => {
       if (err) return res.status(500).send({ message: 'Database error' });
       if (results.length === 0) return res.status(404).send({ message: 'User not found' });
@@ -270,7 +331,7 @@ app.post('/change_password', (req, res) => {
     const { userId, newPassword } = req.body;
 
     // ตรวจสอบผู้ใช้ในฐานข้อมูลจาก id
-    const query = 'SELECT * FROM users WHERE id = ?';
+    const query = 'SELECT * FROM users WHERE user_id = ?';
     pool.query(query, [userId], (err, results) => {
         if (err) return res.status(500).send({ message: 'Database error' });
         if (results.length === 0) return res.status(404).send({ message: 'User not found' });
@@ -312,25 +373,25 @@ app.get('/devices', (req, res) => {
 });
   
 // API สำหรับเพิ่มอุปกรณ์ใหม่
-app.post('/devices', (req, res) => {
-    const { name, id, status } = req.body;
+// app.post('/devices', (req, res) => {
+//     const { name, id, status } = req.body;
   
-    if (!name || !id) {
-      return res.status(400).send({ message: 'Name and ID are required' });
-    }
+//     if (!name || !id) {
+//       return res.status(400).send({ message: 'Name and ID are required' });
+//     }
   
-    pool.query(
-      'INSERT INTO devices (name, id, status) VALUES (?, ?, ?)',
-      [name, id, status ? 1 : 0],
-      (err, results) => {
-        if (err) {
-          console.error('Error adding device:', err);
-          return res.status(500).send({ message: 'Database error' });
-        }
-        res.status(201).send({ message: 'Device added successfully' });
-      }
-    );
-});
+//     pool.query(
+//       'INSERT INTO devices (name, id, status) VALUES (?, ?, ?)',
+//       [name, id, status ? 1 : 0],
+//       (err, results) => {
+//         if (err) {
+//           console.error('Error adding device:', err);
+//           return res.status(500).send({ message: 'Database error' });
+//         }
+//         res.status(201).send({ message: 'Device added successfully' });
+//       }
+//     );
+// });
   
 // // API สำหรับอัปเดตข้อมูลอุปกรณ์ในฐานข้อมูล
 app.put('/devices/:id', (req, res) => {
@@ -354,70 +415,71 @@ app.put('/devices/:id', (req, res) => {
 });
 
 // ดึงค่า status ของอุปกรณ์
-app.get('/devices/:deviceId/status', (req, res) => {
-    const deviceId = req.params.deviceId;
+// app.get('/devices/:deviceId/status', (req, res) => {
+//     const deviceId = req.params.deviceId;
 
-    pool.query(
-        'SELECT status FROM devices WHERE device_id = ?',
-        [deviceId],
-        (err, results) => {
-            if (err) {
-                console.error('Error fetching device status:', err);
-                return res.status(500).send({ message: 'Database error' });
-            }
+//     pool.query(
+//         'SELECT status FROM devices WHERE device_id = ?',
+//         [deviceId],
+//         (err, results) => {
+//             if (err) {
+//                 console.error('Error fetching device status:', err);
+//                 return res.status(500).send({ message: 'Database error' });
+//             }
 
-            if (results.length === 0) {
-                return res.status(404).send({ message: 'Device not found' });
-            }
+//             if (results.length === 0) {
+//                 return res.status(404).send({ message: 'Device not found' });
+//             }
 
-            res.status(200).json(results[0]);
-        }
-    );
-});
+//             res.status(200).json(results[0]);
+//         }
+//     );
+// });
 
 // API สำหรับลบอุปกรณ์
-app.delete('/devices/:id', (req, res) => {
-    const deviceId = req.params.id;
+// app.delete('/devices/:id', (req, res) => {
+//     const deviceId = req.params.id;
   
-    pool.query('DELETE FROM devices WHERE id = ?', [deviceId], (err, results) => {
-      if (err) {
-        console.error('Error deleting device:', err);
-        return res.status(500).send({ message: 'Database error' });
-      }
-      if (results.affectedRows === 0) {
-        return res.status(404).send({ message: 'Device not found' });
-      }
-      res.status(200).send({ message: 'Device deleted successfully' });
-    });
-});
+//     pool.query('DELETE FROM devices WHERE device_id = ?', [deviceId], (err, results) => {
+//       if (err) {
+//         console.error('Error deleting device:', err);
+//         return res.status(500).send({ message: 'Database error' });
+//       }
+//       if (results.affectedRows === 0) {
+//         return res.status(404).send({ message: 'Device not found' });
+//       }
+//       res.status(200).send({ message: 'Device deleted successfully' });
+//     });
+// });
 
 // API สำหรับดึงข้อมูลอุปกรณ์ล่าสุดจากฐานข้อมูล
-app.get('/devices/:deviceId/temperature', (req, res) => {
-    const deviceId = req.params.deviceId;
+// app.get('/devices/:deviceId/temperature', (req, res) => {
+//     const deviceId = req.params.deviceId;
   
-    pool.query(
-      'SELECT front_temp, back_temp, humidity FROM device_readings WHERE device_id = ? ORDER BY recorded_at DESC LIMIT 1',
-      [deviceId],
-      (err, results) => {
-        if (err) {
-          console.error('Error fetching device temperature:', err);
-          return res.status(500).send({ message: 'Database error' });
-        }
+//     pool.query(
+//       'SELECT front_temp, back_temp, humidity FROM device_readings WHERE device_id = ? ORDER BY recorded_at DESC LIMIT 1',
+//       [deviceId],
+//       (err, results) => {
+//         if (err) {
+//           console.error('Error fetching device temperature:', err);
+//           return res.status(500).send({ message: 'Database error' });
+//         }
   
-        if (results.length === 0) {
-          return res.status(404).send({ message: 'No temperature data found for this device' });
-        }
+//         if (results.length === 0) {
+//           return res.status(404).send({ message: 'No temperature data found for this device' });
+//         }
   
-        res.status(200).json(results[0]);
-      }
-    );
-});
+//         res.status(200).json(results[0]);
+//       }
+//     );
+// });
+
 app.put('/devices/:id', (req, res) => {
   const deviceId = req.params.id;
   const { target_front_temp, target_back_temp, target_humidity } = req.body;
 
   pool.query(
-    'UPDATE devices SET target_front_temp = ?, target_back_temp = ?, target_humidity = ? WHERE id = ?',
+    'UPDATE devices SET target_front_temp = ?, target_back_temp = ?, target_humidity = ? WHERE device_id = ?',
     [target_front_temp, target_back_temp, target_humidity, deviceId],
     (err, results) => {
       if (err) {
@@ -439,7 +501,7 @@ app.put('/update-device', (req, res) => {
     const query = `
       UPDATE devices 
       SET device_name = ?, target_front_temp = ?, target_back_temp = ?, target_humidity = ? 
-      WHERE id = ?;
+      WHERE device_id = ?;
     `;
 
     pool.query(
@@ -458,7 +520,7 @@ app.get('/devices/:deviceId/target-values', (req, res) => {
     const deviceId = req.params.deviceId;
 
     pool.query(
-        'SELECT target_front_temp, target_back_temp, target_humidity FROM devices WHERE id = ?',
+        'SELECT device_name, target_front_temp, target_back_temp, target_humidity FROM devices WHERE device_id = ?',
         [deviceId],
         (err, results) => {
             if (err) {
@@ -471,6 +533,7 @@ app.get('/devices/:deviceId/target-values', (req, res) => {
             }
 
             res.status(200).json(results[0]);
+            console.log(results[0]);
         }
     );
 });

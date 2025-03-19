@@ -47,10 +47,10 @@
   "no_account_prompt": "ยังไม่มีบัญชี?",
   "field_required": "กรุณากรอกข้อมูลนี้",
 
-  "verification": "การยืนยันตัวตน",
-  "verification_code_sent": "เราได้ส่งรหัสยืนยันไปยังอีเมลของคุณ: {inputValue}.",
+  "verification": "ยืนยันตัวตน",
+  "verification_code_sent": "เราได้ส่งรหัสยืนยัน\nไปยังที่อยู่อีเมลของคุณแล้ว",
   "enter_valid_otp": "กรุณาใส่รหัส OTP 4 หลักที่ถูกต้อง",
-  "resend_otp": "ไม่ได้รับรหัส OTP? ส่งใหม่",
+  "resend_otp": "ส่งรหัส OTP อีกครั้ง",
   "verify": "ยืนยัน",
   "password_too_short": "รหัสผ่านสั้นเกินไป",
 
@@ -181,5 +181,11 @@
   "request_timeout": "คำขอหมดเวลา",
   "something_went_wrong": "มีบางอย่างผิดพลาด",
 
-  "time_left_to_resend": "เวลาที่เหลือในการส่งอีกครั้ง {time}"
+  "time_left_to_resend": "ส่งอีกครั้ง {time}",
+  "update": "อัปเดต",
+  "otp_sent_successfully": "ส่ง otp เรียบร้อยแล้ว",
+  "otp_send_failed": "การส่ง OTP ล้มเหลว",
+  "failed_update_target": "ไม่สามารถอัปเดตค่าเป้าหมายได้",
+  "updated_Successfully": "อัปเดตสำเร็จแล้ว"
+
 }

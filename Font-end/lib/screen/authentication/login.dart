@@ -60,7 +60,7 @@ class _LoginRouteState extends State<LoginRoute> {
           .timeout(const Duration(seconds: 10), onTimeout: () {
         // Handle timeout
         setState(() {
-          _errorMessage = S.of(context)!.request_timeout; // ข้อความเมื่อหมดเวลา
+          _errorMessage = S.of(context)!.request_timeout;
         });
         throw TimeoutException(
             'The connection has timed out, please try again!');
@@ -93,11 +93,8 @@ class _LoginRouteState extends State<LoginRoute> {
         }
       }
     } catch (e) {
-      // Handle other errors such as network errors or timeouts
       setState(() {
-        _errorMessage = S
-            .of(context)!
-            .something_went_wrong; // ข้อความเมื่อเกิดข้อผิดพลาดทั่วไป
+        _errorMessage = S.of(context)!.something_went_wrong;
       });
       print('Error: $e');
     }

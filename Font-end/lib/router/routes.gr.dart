@@ -10,14 +10,14 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:auto_route/auto_route.dart' as _i21;
 import 'package:flutter/material.dart' as _i23;
+import 'package:paddy_rice/screen/authentication/home.dart' as _i11;
+import 'package:paddy_rice/screen/authentication/login.dart' as _i12;
+import 'package:paddy_rice/screen/authentication/signup.dart' as _i20;
 import 'package:paddy_rice/screen/change_password_sigin/change_password.dart'
     as _i5;
 import 'package:paddy_rice/screen/change_password_sigin/forgot_password.dart'
     as _i10;
-import 'package:paddy_rice/screen/authentication/home.dart' as _i11;
-import 'package:paddy_rice/screen/authentication/login.dart' as _i12;
 import 'package:paddy_rice/screen/change_password_sigin/otp.dart' as _i15;
-import 'package:paddy_rice/screen/authentication/signup.dart' as _i20;
 import 'package:paddy_rice/screen/device/addDevice.dart' as _i1;
 import 'package:paddy_rice/screen/device/changDeviceName.dart' as _i3;
 import 'package:paddy_rice/screen/device/deviceNotifiSetting.dart' as _i7;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/widgets/custom_button.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:paddy_rice/constants/api.dart';
+import 'package:http/http.dart' as http;
 
 @RoutePage()
 class OtpRoute extends StatefulWidget {
@@ -41,6 +44,49 @@ class _OtpRouteState extends State<OtpRoute> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  void _resendOtp() async {
+    if (canResend) {
+      setState(() {
+        isLoading = true;
+      });
+
+      try {
+        await _sendOtpToServer();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(S.of(context)!.otp_sent_successfully),
+          ),
+        );
+
+        _startResendTimer();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(S.of(context)!.otp_send_failed),
+            backgroundColor: error_color,
+          ),
+        );
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _sendOtpToServer() async {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.baseUrl}/send-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': widget.inputValue}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send OTP');
+    }
   }
 
   void _startResendTimer() {
@@ -84,23 +130,23 @@ class _OtpRouteState extends State<OtpRoute> {
     }
   }
 
-  void _resendOtp() {
-    if (canResend) {
-      print('Resend OTP button pressed');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(S.of(context)!.resend_otp),
-        ),
-      );
-      _startResendTimer(); // Restart the timer after sending OTP
-    } else {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(
-      //     content: Text(S.of(context)!.wait_before_resend), // Show a message to wait
-      //   ),
-      // );
-    }
-  }
+  // void _resendOtp() {
+  //   if (canResend) {
+  //     print('Resend OTP button pressed');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(S.of(context)!.resend_otp),
+  //       ),
+  //     );
+  //     _startResendTimer(); // Restart the timer after sending OTP
+  //   } else {
+  //     // ScaffoldMessenger.of(context).showSnackBar(
+  //     //   SnackBar(
+  //     //     content: Text(S.of(context)!.wait_before_resend), // Show a message to wait
+  //     //   ),
+  //     // );
+  //   }
+  // }
 
   String _getRemainingTime() {
     int minutes = _remainingTime ~/ 60;
@@ -149,43 +195,49 @@ class _OtpRouteState extends State<OtpRoute> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 20),
-                      Center(
-                        child: Text(
-                          S
-                              .of(context)!
-                              .verification_code_sent(widget.inputValue),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: fontcolor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            S.of(context)!.verification_code_sent,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                color: fontcolor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400),
+                          ),
                         ),
                       ),
                       SizedBox(height: 20),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 72.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
                         child: PinCodeTextField(
                           appContext: context,
                           length: 4,
                           controller: _pinController,
                           pinTheme: PinTheme(
                             shape: PinCodeFieldShape.box,
-                            borderRadius: BorderRadius.circular(5),
-                            fieldHeight: 50,
-                            fieldWidth: 40,
-                            activeColor: Colors.white,
-                            selectedColor: iconcolor,
-                            inactiveColor: Colors.grey,
-                            activeFillColor: fill_color,
-                            selectedFillColor: fill_color,
-                            inactiveFillColor: fill_color,
+                            borderRadius: BorderRadius.circular(12),
+                            fieldHeight: 56,
+                            fieldWidth: 56,
+                            activeColor:
+                                Colors.transparent, // ไม่มีเส้นขอบเมื่อ active
+                            selectedColor: fontcolor, // สีขอบเมื่อเลือก
+                            inactiveColor:
+                                Colors.grey[300]!, // สีขอบเมื่อไม่ได้เลือก
+                            activeFillColor:
+                                Colors.white, // สีพื้นหลังเมื่อ active
+                            selectedFillColor:
+                                Colors.white, // สีพื้นหลังเมื่อเลือก
+                            inactiveFillColor: Colors.grey[100]!,
                           ),
                           keyboardType: TextInputType.number,
                           boxShadows: [
                             BoxShadow(
-                              offset: Offset(0, 1),
+                              offset: Offset(0, 2),
                               color: Colors.black12,
-                              blurRadius: 10,
+                              blurRadius: 4,
                             ),
                           ],
                           onChanged: (value) {},
@@ -194,32 +246,53 @@ class _OtpRouteState extends State<OtpRoute> {
                       ),
                       SizedBox(height: 4.0),
                       Center(
-                        child: TextButton(
-                          onPressed: canResend ? _resendOtp : null,
+                        child: GestureDetector(
+                          onTap: canResend ? _resendOtp : null,
                           child: Text(
-                            S.of(context)!.resend_otp,
+                            canResend
+                                ? '${S.of(context)!.resend_otp} '
+                                : S
+                                    .of(context)!
+                                    .time_left_to_resend(_getRemainingTime()),
                             style: TextStyle(
-                              color:
-                                  canResend ? unnecessary_colors : Colors.grey,
-                              decoration: TextDecoration.underline,
+                              color: canResend ? fontcolor : unnecessary_colors,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              decoration: canResend
+                                  ? TextDecoration.underline
+                                  : TextDecoration.none,
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(height: 8.0),
-                      Center(
-                        child: Text(
-                          S
-                              .of(context)!
-                              .time_left_to_resend(_getRemainingTime()),
-                          style: TextStyle(
-                            color: fontcolor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 4.0),
+
+                      // Center(
+                      //   child: TextButton(
+                      //     onPressed: canResend ? _resendOtp : null,
+                      //     child: Text(
+                      //       S.of(context)!.resend_otp,
+                      //       style: TextStyle(
+                      //         color:
+                      //             canResend ? unnecessary_colors : Colors.grey,
+                      //         decoration: TextDecoration.underline,
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      // SizedBox(height: 8.0),
+                      // Center(
+                      //   child: Text(
+                      //     S
+                      //         .of(context)!
+                      //         .time_left_to_resend(_getRemainingTime()),
+                      //     style: TextStyle(
+                      //       color: fontcolor,
+                      //       fontSize: 14,
+                      //       fontWeight: FontWeight.w400,
+                      //     ),
+                      //   ),
+                      // ),
+                      SizedBox(height: 16.0),
                       Center(
                         child: CustomButton(
                           text: S.of(context)!.verify,

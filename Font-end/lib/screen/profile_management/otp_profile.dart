@@ -29,6 +29,7 @@ class _OtpRouteState extends State<OtpProfileRoute> {
   bool isLoading = false;
   bool canResend = false; // Track if resend is allowed
   Timer? _timer;
+  int _remainingTime = 60;
 
   @override
   void initState() {
@@ -42,15 +43,22 @@ class _OtpRouteState extends State<OtpProfileRoute> {
     super.dispose();
   }
 
-  // Function to start the timer
   void _startResendTimer() {
     setState(() {
       canResend = false;
     });
-    _timer = Timer(Duration(minutes: 1), () {
-      setState(() {
-        canResend = true;
-      });
+    _remainingTime = 60;
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() {
+          _remainingTime--;
+        });
+      } else {
+        setState(() {
+          canResend = true;
+        });
+        _timer?.cancel();
+      }
     });
   }
 
@@ -94,6 +102,12 @@ class _OtpRouteState extends State<OtpProfileRoute> {
     }
   }
 
+  String _getRemainingTime() {
+    int minutes = _remainingTime ~/ 60;
+    int seconds = _remainingTime % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,43 +149,49 @@ class _OtpRouteState extends State<OtpProfileRoute> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: 20),
-                      Center(
-                        child: Text(
-                          S
-                              .of(context)!
-                              .verification_code_sent(widget.inputValue),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: fontcolor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            S.of(context)!.verification_code_sent,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                color: fontcolor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400),
+                          ),
                         ),
                       ),
                       SizedBox(height: 20),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 72.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
                         child: PinCodeTextField(
                           appContext: context,
                           length: 4,
                           controller: _pinController,
                           pinTheme: PinTheme(
                             shape: PinCodeFieldShape.box,
-                            borderRadius: BorderRadius.circular(5),
-                            fieldHeight: 50,
-                            fieldWidth: 40,
-                            activeColor: Colors.white,
-                            selectedColor: iconcolor,
-                            inactiveColor: Colors.grey,
-                            activeFillColor: fill_color,
-                            selectedFillColor: fill_color,
-                            inactiveFillColor: fill_color,
+                            borderRadius: BorderRadius.circular(12),
+                            fieldHeight: 56,
+                            fieldWidth: 56,
+                            activeColor:
+                                Colors.transparent, // ไม่มีเส้นขอบเมื่อ active
+                            selectedColor: fontcolor, // สีขอบเมื่อเลือก
+                            inactiveColor:
+                                Colors.grey[300]!, // สีขอบเมื่อไม่ได้เลือก
+                            activeFillColor:
+                                Colors.white, // สีพื้นหลังเมื่อ active
+                            selectedFillColor:
+                                Colors.white, // สีพื้นหลังเมื่อเลือก
+                            inactiveFillColor: Colors.grey[100]!,
                           ),
                           keyboardType: TextInputType.number,
                           boxShadows: [
                             BoxShadow(
-                              offset: Offset(0, 1),
+                              offset: Offset(0, 2),
                               color: Colors.black12,
-                              blurRadius: 10,
+                              blurRadius: 4,
                             ),
                           ],
                           onChanged: (value) {},
@@ -180,23 +200,26 @@ class _OtpRouteState extends State<OtpProfileRoute> {
                       ),
                       SizedBox(height: 4.0),
                       Center(
-                        child: TextButton(
-                          onPressed: canResend
-                              ? _resendOtp
-                              : null, // Disable button if canResend is false
+                        child: GestureDetector(
+                          onTap: canResend ? _resendOtp : null,
                           child: Text(
-                            S.of(context)!.resend_otp,
+                            canResend
+                                ? '${S.of(context)!.resend_otp} '
+                                : S
+                                    .of(context)!
+                                    .time_left_to_resend(_getRemainingTime()),
                             style: TextStyle(
-                              color: canResend
-                                  ? unnecessary_colors
-                                  : Colors
-                                      .grey, // Change color based on canResend
-                              decoration: TextDecoration.underline,
+                              color: canResend ? fontcolor : unnecessary_colors,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              decoration: canResend
+                                  ? TextDecoration.underline
+                                  : TextDecoration.none,
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(height: 4.0),
+                      SizedBox(height: 16.0),
                       Center(
                         child: CustomButton(
                           text: S.of(context)!.verify,

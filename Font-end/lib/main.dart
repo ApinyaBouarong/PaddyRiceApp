@@ -45,7 +45,6 @@ Future<void> fetchDeviceTargetValuesAndCurrentValues(String deviceId) async {
       Uri.parse('${ApiConstants.baseUrl}/devices/$deviceId/target-values');
   final currentValuesUrl =
       Uri.parse('${ApiConstants.baseUrl}/devices/$deviceId/current-values');
-
   try {
     // Fetch target values
     final targetResponse = await http.get(targetUrl);

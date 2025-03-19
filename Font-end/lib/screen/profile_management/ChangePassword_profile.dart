@@ -378,7 +378,6 @@ class ShDialog extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 30),
-            // ทำให้ปุ่มอยู่ตรงกลาง
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(

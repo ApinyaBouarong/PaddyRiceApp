@@ -179,14 +179,17 @@ class _ChangePasswordRouteState extends State<ChangePasswordRoute> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 40),
-                          child: Text(
-                            S.of(context)!.new_password_instruction,
-                            style: TextStyle(
-                              color: fontcolor,
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w400,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              S.of(context)!.new_password_instruction,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  color: fontcolor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400),
                             ),
                           ),
                         ),

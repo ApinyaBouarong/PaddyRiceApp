@@ -8,7 +8,7 @@ import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/router/routes.gr.dart';
 import 'package:paddy_rice/widgets/custom_button.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
-import 'package:paddy_rice/widgets/dialog.dart';
+import 'package:paddy_rice/widgets/ChoiceDialog.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 @RoutePage()

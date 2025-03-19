@@ -8,7 +8,7 @@ import 'package:paddy_rice/widgets/custom_button.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../widgets/custom_text_field_no_icon.dart';
+import '../../../widgets/custom_text_field_no_icon.dart';
 import 'package:http/http.dart' as http;
 import 'package:paddy_rice/constants/api.dart';
 

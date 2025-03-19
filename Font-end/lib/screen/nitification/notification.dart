@@ -349,12 +349,12 @@ class _NotifiRouteState extends State<NotifiRoute> {
         ),
         title: Text(S.of(context)!.notification, style: appBarFont),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () => context.router.replaceNamed('/settingNotifi'),
-            icon: Icon(Icons.settings, color: iconcolor),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () => context.router.replaceNamed('/settingNotifi'),
+        //     icon: Icon(Icons.settings, color: iconcolor),
+        //   ),
+        // ],
       ),
       backgroundColor: maincolor,
       body: Stack(

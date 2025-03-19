@@ -12,7 +12,7 @@ class WebSocketService {
 
   void connectToDevice(String deviceId, Function(dynamic) onData) {
     if (!_channels.containsKey(deviceId)) {
-      final wsUrl = Uri.parse('ws://10.0.2.2:3000/ws');
+      final wsUrl = Uri.parse('ws://192.168.137.91:3000/ws');
       final channel = WebSocketChannel.connect(wsUrl);
 
       channel.stream.listen(

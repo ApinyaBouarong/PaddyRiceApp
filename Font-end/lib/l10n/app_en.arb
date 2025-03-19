@@ -46,10 +46,10 @@
   "no_account_prompt": "Don’t have an account?",
   "field_required": "This field is required",
 
-  "verification": "Verification",
-  "verification_code_sent": "We have sent a verification code to your email: {inputValue}.",
+  "verification": "Verification Code",
+  "verification_code_sent": "we have sent the varification\nemail code to your email address",
   "enter_valid_otp": "Please enter a valid 4-digit OTP.",
-  "resend_otp": "Didn't receive the OTP? Resend code",
+  "resend_otp": "Resend OTP",
   "verify": "Verify",
   "password_too_short": "Password too Short",
 
@@ -180,5 +180,10 @@
   "request_timeout": "Request timeout",
   "something_went_wrong": "Something went wrong",
 
-  "time_left_to_resend": "Time remaining to resend {time}"
+  "time_left_to_resend": "Resend in {time}",
+  "update": "Update",
+  "otp_sent_successfully": "OTP sent successfully",
+  "otp_send_failed": "OTP send failed",
+  "failed_update_target": "Failed to update target values",
+  "updated_Successfully": "Updated Successfully"
 }

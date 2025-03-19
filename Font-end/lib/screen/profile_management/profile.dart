@@ -6,13 +6,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:paddy_rice/constants/color.dart';
 import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/main.dart';
-import 'package:paddy_rice/widgets/dialog.dart';
+import 'package:paddy_rice/widgets/ChoiceDialog.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:paddy_rice/constants/api.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path/path.dart' as path;
+// import 'package:path/path.dart' as path;
+import 'package:crypto/crypto.dart';
 
 class UserProfile {
   String name;
@@ -149,7 +150,7 @@ class _LanguageChangeTileState extends State<LanguageChangeTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(Icons.language, color: fontcolor),
+      leading: Icon(Icons.translate, color: fontcolor),
       title: Text(S.of(context)!.language,
           style: TextStyle(color: fontcolor, fontSize: 16)),
       trailing: Icon(Icons.chevron_right, color: iconcolor),
@@ -201,7 +202,7 @@ class _LanguageChangeTileState extends State<LanguageChangeTile> {
     if (locale != _currentLocale) {
       setState(() {
         _currentLocale = locale;
-        MyApp.setLocale(context, locale); // เปลี่ยนภาษาของแอป
+        MyApp.setLocale(context, locale);
       });
       Navigator.of(context).pop();
     }
@@ -317,7 +318,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   @override
   void initState() {
     super.initState();
-    _loadImageFromLocal(); // โหลดรูปเมื่อเริ่มต้น
+    _loadImageFromLocal();
   }
 
   void _openGallery(BuildContext context) async {
@@ -332,10 +333,16 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     }
   }
 
+  String _generateImageKey(String input) {
+    var bytes = utf8.encode(input);
+    var hash = sha256.convert(bytes);
+    return hash.toString();
+  }
+
   // บันทึกรูปภาพลงในเครื่อง
   Future<String> _saveImageToLocal(File image) async {
     final directory = await getApplicationDocumentsDirectory();
-    final fileName = path.basename(image.path);
+    final fileName = _generateImageKey(widget.user.email) + '.jpg';
     final savedImage = await image.copy('${directory.path}/$fileName');
 
     // บันทึก path ของรูปใน SharedPreferences
@@ -345,6 +352,18 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
     return savedImage.path;
   }
+  // Future<String> _saveImageToLocal(File image) async {
+  //   final directory = await getApplicationDocumentsDirectory();
+  //   final fileName = path.basename(image.path);
+  //   final savedImage = await image.copy('${directory.path}/$fileName');
+
+  //   // บันทึก path ของรูปใน SharedPreferences
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString(
+  //       'user_profile_image_${widget.user.email}', savedImage.path);
+
+  //   return savedImage.path;
+  // }
 
   // โหลดรูปจากเครื่องเมื่อเปิดแอป
   Future<void> _loadImageFromLocal() async {
@@ -357,6 +376,16 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       });
     }
   }
+  // Future<void> _loadImageFromLocal() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final savedImagePath =
+  //       prefs.getString('user_profile_image_${widget.user.email}');
+  //   if (savedImagePath != null && File(savedImagePath).existsSync()) {
+  //     setState(() {
+  //       _imagePath = savedImagePath;
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -379,6 +408,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     height: 80,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: iconcolor,
+                        width: 2.0,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -390,9 +423,11 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       image: DecorationImage(
                         image: _imagePath != null
                             ? FileImage(File(_imagePath!))
-                            : AssetImage('lib/assets/icon/profile.jpg')
+                            : AssetImage('lib/assets/icon/profile.png')
                                 as ImageProvider,
-                        fit: BoxFit.cover,
+                        // fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        scale: 1.2,
                       ),
                     ),
                   ),
@@ -430,20 +465,28 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     Text(
                       "${widget.user.name} ${widget.user.surname}",
                       style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: fontcolor),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: fontcolor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     Text(
-                      widget.user.email,
-                      style: TextStyle(fontSize: 14, color: unnecessary_colors),
+                      widget.user.email.length > 30
+                          ? '${widget.user.email.substring(0, 30)}...'
+                          : widget.user.email,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: unnecessary_colors,
+                      ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
                   ],
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),

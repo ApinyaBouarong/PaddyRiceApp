@@ -197,7 +197,7 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
                           ..._buildTextFields(),
                           const SizedBox(height: 20),
                           CustomButton(
-                            text: S.of(context)!.save_changes,
+                            text: S.of(context)!.update,
                             onPressed: _onSaveChanges,
                             isLoading: isLoading,
                           ),
@@ -537,65 +537,67 @@ class _TextFieldCustomState extends State<TextFieldCustom> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-            width: 312,
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            decoration: BoxDecoration(
-              color: fill_color,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _isFocused ? iconcolor : fill_color),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.labelText + " : ",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: unnecessary_colors,
-                  ),
+    return Container(
+      width: 312,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            focusNode: _focusNode,
+            controller: widget.controller,
+            obscureText: widget.obscureText,
+            validator: widget.validator,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: fill_color,
+              contentPadding:
+                  EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              suffixIcon: (_isFocused)
+                  ? IconButton(
+                      icon: Icon(widget.suffixIcon, color: iconcolor),
+                      onPressed: widget.onSuffixIconPressed,
+                    )
+                  : null,
+              labelText: widget.labelText,
+              labelStyle: TextStyle(
+                color: _isFocused
+                    ? focusedBorder_color
+                    : widget.isError
+                        ? error_color
+                        : unnecessary_colors,
+                fontSize: 16,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: widget.isError ? error_color : fill_color,
+                  width: 1,
                 ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight, // จัดข้อความไปทางขวา
-                    child: TextFormField(
-                      focusNode: _focusNode,
-                      controller: widget.controller,
-                      obscureText: widget.obscureText,
-                      validator: widget.validator,
-                      style: TextStyle(color: iconcolor, fontSize: 16),
-                      textAlign: TextAlign.left, // จัดข้อความในฟิลด์ให้อยู่ขวา
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        suffixIcon: (_isFocused && _hasText)
-                            ? IconButton(
-                                icon: Icon(widget.suffixIcon,
-                                    color: unnecessary_colors),
-                                onPressed: widget.onSuffixIconPressed,
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )),
-        if (widget.isError)
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 4.0),
-            child: Text(
-              widget.errorMessage,
-              style: TextStyle(color: error_color, fontSize: 12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: focusedBorder_color, width: 1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: error_color, width: 1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: error_color, width: 1),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
-      ],
+          if (widget.isError)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0, left: 16.0),
+              child: Text(
+                widget.errorMessage,
+                style: errorFont,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
