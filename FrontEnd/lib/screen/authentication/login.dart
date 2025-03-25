@@ -68,11 +68,12 @@ class _LoginRouteState extends State<LoginRoute> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        final userId = responseData['userId'];
+        print(response.body);
+        final userId = responseData['user_id'];
         final deviceId = responseData['deviceId'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
-        await prefs.setInt('userId', userId);
+        await prefs.setInt('user_id', userId);
 
         context.router.replace(BottomNavigationRoute(page: 0));
       } else {

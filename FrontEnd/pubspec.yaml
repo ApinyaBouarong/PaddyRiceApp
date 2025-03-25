@@ -68,9 +68,10 @@ dependencies:
   device_info_plus: ^10.1.2
   numberpicker: ^2.1.2
   web_socket_channel: ^2.4.5
-  flutter_background_service: ^5.0.10
+  flutter_background_service: ^5.1.0
   flutter_background_service_android: ^6.2.7
   crypto: ^3.0.3
+  firebase_messaging: ^15.1.0
   # esp_smartconfig: ^2.0.4
 
 dev_dependencies:

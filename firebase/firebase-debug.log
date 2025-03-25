@@ -1,0 +1,145 @@
+[debug] [2025-03-24T17:10:29.960Z] ----------------------------------------------------------------------
+[debug] [2025-03-24T17:10:29.964Z] Command:       C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-03-24T17:10:29.964Z] CLI Version:   13.35.1
+[debug] [2025-03-24T17:10:29.964Z] Platform:      win32
+[debug] [2025-03-24T17:10:29.965Z] Node Version:  v20.18.2
+[debug] [2025-03-24T17:10:29.965Z] Time:          Tue Mar 25 2025 00:10:29 GMT+0700 (Indochina Time)
+[debug] [2025-03-24T17:10:29.965Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-03-24T17:10:29.973Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-03-24T17:10:29.973Z] > authorizing via signed-in user (apinya61145@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  F:\Project\firebase
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[info] i  If you want to create a project in a Google Cloud organization or folder, please use "firebase projects:create" instead, and return to this command when you've created the project. 
+[debug] [2025-03-24T17:11:47.603Z] ----------------------------------------------------------------------
+[debug] [2025-03-24T17:11:47.608Z] Command:       C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-03-24T17:11:47.609Z] CLI Version:   13.35.1
+[debug] [2025-03-24T17:11:47.609Z] Platform:      win32
+[debug] [2025-03-24T17:11:47.610Z] Node Version:  v20.18.2
+[debug] [2025-03-24T17:11:47.610Z] Time:          Tue Mar 25 2025 00:11:47 GMT+0700 (Indochina Time)
+[debug] [2025-03-24T17:11:47.610Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-03-24T17:11:47.620Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-03-24T17:11:47.621Z] > authorizing via signed-in user (apinya61145@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  F:\Project\firebase
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-03-24T17:12:34.304Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:34.305Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:34.306Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/availableProjects pageSize=100
+[debug] [2025-03-24T17:12:35.635Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/availableProjects 200
+[debug] [2025-03-24T17:12:35.635Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/availableProjects [omitted]
+[debug] [2025-03-24T17:12:37.733Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:37.734Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:37.735Z] >>> [apiv2][query] POST https://firebase.googleapis.com/v1beta1/projects/root-quasar-440103-u6:addFirebase [none]
+[debug] [2025-03-24T17:12:39.923Z] <<< [apiv2][status] POST https://firebase.googleapis.com/v1beta1/projects/root-quasar-440103-u6:addFirebase 200
+[debug] [2025-03-24T17:12:39.924Z] <<< [apiv2][body] POST https://firebase.googleapis.com/v1beta1/projects/root-quasar-440103-u6:addFirebase {"name":"operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0"}
+[debug] [2025-03-24T17:12:39.927Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:39.928Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:39.929Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 [none]
+[debug] [2025-03-24T17:12:42.953Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 200
+[debug] [2025-03-24T17:12:42.953Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 {"name":"operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0"}
+[debug] [2025-03-24T17:12:43.459Z] [Add Firebase Poller] Retrying task index 0
+[debug] [2025-03-24T17:12:43.459Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:43.459Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:43.459Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 [none]
+[debug] [2025-03-24T17:12:44.089Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 200
+[debug] [2025-03-24T17:12:44.089Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 {"name":"operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0"}
+[debug] [2025-03-24T17:12:45.102Z] [Add Firebase Poller] Retrying task index 0
+[debug] [2025-03-24T17:12:45.103Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:45.103Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:45.103Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 [none]
+[debug] [2025-03-24T17:12:45.522Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 200
+[debug] [2025-03-24T17:12:45.523Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 {"name":"operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0"}
+[debug] [2025-03-24T17:12:47.527Z] [Add Firebase Poller] Retrying task index 0
+[debug] [2025-03-24T17:12:47.529Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:47.529Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:47.530Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 [none]
+[debug] [2025-03-24T17:12:48.144Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 200
+[debug] [2025-03-24T17:12:48.145Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0 {"name":"operations/workflows/ZTBiNDBjOWUtZjRhMy00YjMyLTk1N2ItY2RjNjRiYzVmMDE0","done":true,"response":{"@type":"type.googleapis.com/google.firebase.service.v1beta1.FirebaseProject","projectId":"root-quasar-440103-u6","projectNumber":"359594091775","displayName":"My First Project","name":"projects/root-quasar-440103-u6","resources":{"hostingSite":"root-quasar-440103-u6"}}}
+[info] 
+[info] === Your Firebase project is ready! ===
+[info] 
+[info] Project information:
+[info]    - Project ID: root-quasar-440103-u6
+[info]    - Project Name: My First Project
+[info] 
+[info] Firebase console is available at
+[info] https://console.firebase.google.com/project/root-quasar-440103-u6/overview
+[info] i  Using project root-quasar-440103-u6 (My First Project) 
+[info] 
+=== Hosting Setup
+[debug] [2025-03-24T17:12:48.184Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:48.185Z] Checked if tokens are valid: true, expires at: 1742839680213
+[debug] [2025-03-24T17:12:48.186Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/root-quasar-440103-u6 [none]
+[debug] [2025-03-24T17:12:48.530Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/root-quasar-440103-u6 200
+[debug] [2025-03-24T17:12:48.530Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/root-quasar-440103-u6 {"projectId":"root-quasar-440103-u6","projectNumber":"359594091775","displayName":"My First Project","name":"projects/root-quasar-440103-u6","resources":{"hostingSite":"root-quasar-440103-u6"},"state":"ACTIVE","etag":"1_59fbfe1b-d638-40a6-a613-5e2f931f7f1b"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[debug] [2025-03-24T17:12:54.154Z] >>> [apiv2][query] GET https://www.gstatic.com/firebasejs/releases.json [none]
+[debug] [2025-03-24T17:12:54.302Z] <<< [apiv2][status] GET https://www.gstatic.com/firebasejs/releases.json 200
+[debug] [2025-03-24T17:12:54.302Z] <<< [apiv2][body] GET https://www.gstatic.com/firebasejs/releases.json {"current":{"version":"11.5.0","browserURL":"https://www.gstatic.com/firebasejs/11.5.0/firebase.js","packageURL":"https://www.gstatic.com/firebasejs/11.5.0/firebase.tgz"},"live":{"version":"11.5","browserURL":"https://www.gstatic.com/firebasejs/live/11.5/firebase.js","packageURL":"https://www.gstatic.com/firebasejs/live/11.5/firebase.tgz"},"components":{"analytics":"https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js","app":"https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js","app-check":"https://www.gstatic.com/firebasejs/11.5.0/firebase-app-check.js","auth":"https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js","auth/cordova":"https://www.gstatic.com/firebasejs/11.5.0/firebase-auth/cordova.js","auth/web-extension":"https://www.gstatic.com/firebasejs/11.5.0/firebase-auth/web-extension.js","functions":"https://www.gstatic.com/firebasejs/11.5.0/firebase-functions.js","firestore":"https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js","firestore/lite":"https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore/lite.js","installations":"https://www.gstatic.com/firebasejs/11.5.0/firebase-installations.js","storage":"https://www.gstatic.com/firebasejs/11.5.0/firebase-storage.js","performance":"https://www.gstatic.com/firebasejs/11.5.0/firebase-performance.js","remote-config":"https://www.gstatic.com/firebasejs/11.5.0/firebase-remote-config.js","messaging":"https://www.gstatic.com/firebasejs/11.5.0/firebase-messaging.js","messaging/sw":"https://www.gstatic.com/firebasejs/11.5.0/firebase-messaging/sw.js","database":"https://www.gstatic.com/firebasejs/11.5.0/firebase-database.js","vertexai":"https://www.gstatic.com/firebasejs/11.5.0/firebase-vertexai.js","data-connect":"https://www.gstatic.com/firebasejs/11.5.0/firebase-data-connect.js","firestore.memory":"https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.memory.js"}}
+[info] +  Wrote p/index.html 
+[info] 
+[info] i  Detected a .git folder at F:\Project 
+[info] i  Authorizing with GitHub to upload your service account to a GitHub repository's secrets store. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://github.com/login/oauth/authorize?client_id=89cf50f02ac6aaed3484&state=710109392&redirect_uri=http%3A%2F%2Flocalhost%3A9005&scope=read%3Auser%20repo%20public_repo
+[info] 
+[info] Waiting for authentication...
+[debug] [2025-03-24T17:13:24.897Z] ----------------------------------------------------------------------
+[debug] [2025-03-24T17:13:24.900Z] Command:       C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-03-24T17:13:24.900Z] CLI Version:   13.35.1
+[debug] [2025-03-24T17:13:24.900Z] Platform:      win32
+[debug] [2025-03-24T17:13:24.900Z] Node Version:  v20.18.2
+[debug] [2025-03-24T17:13:24.901Z] Time:          Tue Mar 25 2025 00:13:24 GMT+0700 (Indochina Time)
+[debug] [2025-03-24T17:13:24.901Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-03-24T17:13:24.907Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-03-24T17:13:24.908Z] > authorizing via signed-in user (apinya61145@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  F:\Project\firebase
+
