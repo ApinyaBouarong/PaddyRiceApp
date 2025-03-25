@@ -1,258 +1,5 @@
-// import 'package:auto_route/auto_route.dart';
-// import 'package:flutter/material.dart';
-// import 'package:intl/intl.dart';
-// import 'package:paddy_rice/constants/api.dart';
-// import 'package:paddy_rice/constants/color.dart';
-// import 'package:paddy_rice/constants/font_size.dart';
-// import 'package:paddy_rice/router/routes.gr.dart';
-// import 'package:paddy_rice/widgets/decorated_image.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
-
-// @RoutePage()
-// class NotifiRoute extends StatefulWidget {
-//   const NotifiRoute({super.key});
-
-//   @override
-//   _NotifiRouteState createState() => _NotifiRouteState();
-// }
-
-// class _NotifiRouteState extends State<NotifiRoute> {
-//   List<NotificationItem> notifications = [];
-//   late Map<String, List<NotificationItem>> groupedNotifications;
-//   bool isLoading = true;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     fetchNotifications();
-//   }
-
-//   Future<void> fetchNotifications() async {
-//     final deviceId = "1"; // Replace with actual device ID or logic
-//     final url =
-//         Uri.parse('${ApiConstants.baseUrl}/devices/$deviceId/notifications');
-
-//     try {
-//       final response = await http.get(url);
-
-//       if (response.statusCode == 200) {
-//         final List<dynamic> jsonData = jsonDecode(response.body);
-
-//         setState(() {
-//           notifications = jsonData.map((item) {
-//             return NotificationItem(
-//               item['date'],
-//               item['time'],
-//               item['title'],
-//               item['description'],
-//               temperature: (item['temperature'] is int)
-//                   ? (item['temperature'] as int).toDouble()
-//                   : item['temperature'] as double?,
-//               setpoint: (item['setpoint'] is int)
-//                   ? (item['setpoint'] as int).toDouble()
-//                   : item['setpoint'] as double?,
-//               exceededValue: (item['exceededValue'] is int)
-//                   ? (item['exceededValue'] as int).toDouble()
-//                   : item['exceededValue'] as double?,
-//             );
-//           }).toList();
-
-//           // เรียงลำดับการแจ้งเตือนจากใหม่ไปเก่า
-//           notifications.sort((a, b) {
-//             DateTime aDate = DateTime.parse('${a.date} ${a.time}');
-//             DateTime bDate = DateTime.parse('${b.date} ${b.time}');
-//             return bDate.compareTo(aDate); // ล่าสุดอยู่ด้านบน
-//           });
-
-//           groupedNotifications = groupNotificationsByDate();
-//           isLoading = false;
-//         });
-//       } else {
-//         showSnackBar(S.of(context)!.no_notifications);
-//         setState(() {
-//           isLoading = false;
-//         });
-//       }
-//     } catch (error) {
-//       showSnackBar('Error fetching notifications: $error');
-//       setState(() {
-//         isLoading = false;
-//       });
-//     }
-//   }
-
-//   void showSnackBar(String message) {
-//     // Schedule a callback to show the SnackBar after the current frame is rendered.
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text(message)),
-//       );
-//     });
-//   }
-
-//   Map<String, List<NotificationItem>> groupNotificationsByDate() {
-//     Map<String, List<NotificationItem>> map = {};
-//     for (var notification in notifications) {
-//       (map[notification.date] ??= []).add(notification);
-//     }
-//     return map;
-//   }
-
-//   String formatDate(String date) {
-//     final DateTime dateTime = DateTime.parse(date);
-//     final locale = Localizations.localeOf(context).toString();
-//     final DateFormat formatter = DateFormat.yMMMMd(locale);
-
-//     String formattedDate = formatter.format(dateTime);
-
-//     if (locale == 'th') {
-//       final buddhistYear = dateTime.year + 543;
-//       formattedDate = formattedDate
-//           .replaceAll('${dateTime.year}', '$buddhistYear')
-//           .replaceAll('ค.ศ.', 'พ.ศ.');
-//     }
-
-//     return formattedDate;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: maincolor,
-//         leading: IconButton(
-//           onPressed: () =>
-//               context.router.replace(BottomNavigationRoute(page: 0)),
-//           icon: Icon(Icons.arrow_back, color: iconcolor),
-//         ),
-//         title: Text(S.of(context)!.notification, style: appBarFont),
-//         centerTitle: true,
-//         actions: [
-//           IconButton(
-//             onPressed: () => context.router.replaceNamed('/settingNotifi'),
-//             icon: Icon(Icons.settings, color: iconcolor),
-//           ),
-//         ],
-//       ),
-//       backgroundColor: maincolor,
-//       body: Stack(
-//         children: [
-//           DecoratedImage(),
-//           isLoading
-//               ? Center(child: CircularProgressIndicator())
-//               : validateNotifications()
-//                   ? ListView(
-//                       children: groupedNotifications.entries.map((entry) {
-//                         return Column(
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           children: [
-//                             Padding(
-//                               padding: const EdgeInsets.symmetric(
-//                                   horizontal: 16.0, vertical: 8.0),
-//                               child: Text(
-//                                 formatDate(entry.key),
-//                                 style: TextStyle(
-//                                     fontSize: 18,
-//                                     fontWeight: FontWeight.bold,
-//                                     color: fontcolor),
-//                               ),
-//                             ),
-//                             ...entry.value
-//                                 .map((e) => notificationCard(
-//                                     e.time, e.title, e.description,
-//                                     temperature: e.temperature))
-//                                 .toList(),
-//                           ],
-//                         );
-//                       }).toList(),
-//                     )
-//                   : Center(child: Text(S.of(context)!.no_notifications)),
-//         ],
-//       ),
-//     );
-//   }
-
-//   bool validateNotifications() {
-//     if (notifications.isEmpty) {
-//       showSnackBar(S.of(context)!.no_notifications);
-//       return false;
-//     }
-//     return true;
-//   }
-
-//   Widget notificationCard(String time, String title, String description,
-//       {double? temperature}) {
-//     return Card(
-//       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-//       shape: RoundedRectangleBorder(
-//         borderRadius: BorderRadius.circular(10),
-//       ),
-//       child: Container(
-//         decoration: BoxDecoration(
-//           color: fill_color,
-//           borderRadius: BorderRadius.circular(10),
-//         ),
-//         child: Padding(
-//           padding: const EdgeInsets.all(8.0),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Row(
-//                 children: [
-//                   Text(time,
-//                       style: TextStyle(
-//                           color: fontcolor,
-//                           fontSize: 16,
-//                           fontWeight: FontWeight.bold)),
-//                   SizedBox(width: 8),
-//                   Text(title,
-//                       style: TextStyle(
-//                           color: fontcolor,
-//                           fontWeight: FontWeight.bold,
-//                           fontSize: 16)),
-//                 ],
-//               ),
-//               SizedBox(height: 4),
-//               Row(
-//                 children: [
-//                   SizedBox(width: 80),
-//                   Expanded(
-//                     child: Text(
-//                       temperature != null
-//                           ? "$description ${temperature.toStringAsFixed(1)}°C"
-//                           : description,
-//                       style: TextStyle(
-//                         color: unnecessary_colors,
-//                         fontSize: 16,
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class NotificationItem {
-//   String date;
-//   String time;
-//   String title;
-//   String description;
-//   double? temperature;
-//   double? setpoint; // ค่าที่ตั้ง
-//   double? exceededValue; // ค่าที่เกิน
-
-//   NotificationItem(this.date, this.time, this.title, this.description,
-//       {this.temperature, this.setpoint, this.exceededValue});
-// }
-
 import 'package:auto_route/auto_route.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:paddy_rice/constants/color.dart';
@@ -260,6 +7,8 @@ import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/router/routes.gr.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 @RoutePage()
 class NotifiRoute extends StatefulWidget {
@@ -272,11 +21,80 @@ class NotifiRoute extends StatefulWidget {
 class _NotifiRouteState extends State<NotifiRoute> {
   List<NotificationItem> notifications = [];
   late Map<String, List<NotificationItem>> groupedNotifications;
+  WebSocketChannel? channel;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  String? _token;
 
   @override
   void initState() {
     super.initState();
     // Do not initialize notifications here
+    final AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    final InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    channel = WebSocketChannel.connect(
+      Uri.parse('ws://localhost:8080'),
+    );
+
+    // ฟังข้อความจาก WebSocket
+    channel?.stream.listen((message) {
+      // เพิ่ม notification ใหม่เมื่อได้รับข้อความ
+      addNotification(message);
+      showNotification(message);
+    });
+  }
+
+  Future<void> _getToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    setState(() {
+      _token = token;
+    });
+  }
+
+  //จำลอง json ข้อมูล
+
+  void addNotification(String message) {
+    final decodedMessage = NotificationItem(
+      DateTime.now().toString(),
+      TimeOfDay.now().format(context),
+      'New Alert',
+      message,
+    );
+
+    setState(() {
+      notifications.add(decodedMessage);
+    });
+  }
+
+  Future<void> showNotification(String message) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'channel_id',
+      'Notification Channel',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      '🚨 Alert',
+      message,
+      platformChannelSpecifics,
+    );
+  }
+
+  @override
+  void dispose() {
+    channel?.sink.close();
+    super.dispose();
   }
 
   @override

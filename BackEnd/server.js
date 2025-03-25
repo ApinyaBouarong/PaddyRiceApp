@@ -7,14 +7,15 @@ const cors = require('cors');
 const MySQLStore = require('express-mysql-session')(session);
 const mailjet = require('node-mailjet');
 const mqtt = require('mqtt');
+const WebSocket = require('ws');
 
-const mqttHost = 'mqtt://192.168.137.91'; 
-const mqttPort = 1883; 
-const mqttTopic = 'sensor/data'; 
+const mqttHost = 'mqtt://192.168.137.91';
+const mqttPort = 1883;
+const mqttTopic = 'sensor/data';
 
 const client = mailjet.apiConnect(
-    '22a0bc71b4589e0eee7501bc18b783cd',  
-    '2178197b69175dadf0c6d8a1229a20e4'   
+    '22a0bc71b4589e0eee7501bc18b783cd',
+    '2178197b69175dadf0c6d8a1229a20e4'
 );
 
 const clientMqtt = mqtt.connect(mqttHost, {
@@ -22,10 +23,10 @@ const clientMqtt = mqtt.connect(mqttHost, {
     clientId: 'NodeJSClient',
     clean: true,
 });
-
+//Firebase Cloud Messaging ไม่ใช้ webSocket
 const app = express();
-const port = 3000;
-
+const port = 3333;
+const wss = new WebSocket.Server({ port: 8080 });
 let mqttData = {};
 
 app.use(cors());
@@ -52,7 +53,6 @@ app.use(session({
 
 clientMqtt.on('connect', () => {
     console.log('Connected to MQTT Broker');
-    // สมัครสมาชิก Topic
     clientMqtt.subscribe(mqttTopic, (err) => {
       if (err) {
         console.error(`Failed to subscribe to topic ${mqttTopic}:`, err);
@@ -60,18 +60,18 @@ clientMqtt.on('connect', () => {
         console.log(`Subscribed to topic: ${mqttTopic}`);
       }
     });
-});  
+});
 
 clientMqtt.on('message', (topic, message) => {
     console.log(`Message received from topic ${topic}:`);
     try {
         const mqttData = JSON.parse(message.toString());
         console.log('MQTT Data:', mqttData);
-    
+
       } catch (error) {
         console.error('Error parsing message:', error);
       }
-});  
+});
 
 clientMqtt.on('error', (err) => {
     console.error('MQTT Error:', err);
@@ -82,15 +82,15 @@ clientMqtt.on('error', (err) => {
 //     if (!device_id) {
 //       return res.status(400).json({ error: 'Device ID is required' });
 //     }
-  
+
 //     const query = `
-//       SELECT 
-//         target_front_temp, 
-//         target_back_temp, 
-//         target_humidity 
-//       FROM devices 
+//       SELECT
+//         target_front_temp,
+//         target_back_temp,
+//         target_humidity
+//       FROM devices
 //       WHERE device_id = ?`;
-  
+
 //     pool.query(query, [device_id], (err, results) => {
 //       if (err) {
 //         return res.status(500).json({ error: 'Database query error', details: err.message });
@@ -139,7 +139,7 @@ app.post('/send-otp', (req, res) => {
                     HTMLPart: `<h3>Your OTP code is: <strong>${otp}</strong></h3>`
                 }
             ]
-            
+
         });
 
     // ส่งอีเมลและตอบกลับ
@@ -191,7 +191,7 @@ app.post('/login', async (req, res) => {
         if (rows.length === 0) {
             return res.status(401).json({ message: 'Invalid email or phone number' });
         }
-
+        console.log(rows);
         const user = rows[0];
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
@@ -199,7 +199,8 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Incorrect password' });
         }
 
-        res.status(200).json({ userId: user.id });
+        res.status(200).json({ user_id: user.user_id });
+        console.log('User logged in:', user.user_id);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
@@ -299,29 +300,29 @@ app.put('/profile/:userId', async (req, res) => {
 // ฟังก์ชันสำหรับเปลี่ยนรหัสผ่าน
 app.post('/change-password', (req, res) => {
     const { userId, currentPassword, newPassword } = req.body;
-  
+
     // ตรวจสอบผู้ใช้ในฐานข้อมูลจาก id
     const query = 'SELECT * FROM users WHERE user_id = ?';
     pool.query(query, [userId], (err, results) => {
       if (err) return res.status(500).send({ message: 'Database error' });
       if (results.length === 0) return res.status(404).send({ message: 'User not found' });
-  
+
       const user = results[0];
-  
+
       // ตรวจสอบว่ารหัสผ่านปัจจุบันถูกต้องหรือไม่
       const isPasswordValid = bcrypt.compareSync(currentPassword, user.password);
       if (!isPasswordValid) {
         return res.status(401).send({ message: 'Current password is incorrect' });
       }
-  
+
       // เข้ารหัสรหัสผ่านใหม่
       const hashedPassword = bcrypt.hashSync(newPassword, 8);
-  
+
       // อัปเดตฐานข้อมูลด้วยรหัสผ่านใหม่
       const updateQuery = 'UPDATE users SET password = ? WHERE id = ?';
       pool.query(updateQuery, [hashedPassword, userId], (err, results) => {
         if (err) return res.status(500).send({ message: 'Error updating password' });
-  
+
         res.status(200).send({ message: 'Password changed successfully' });
       });
     });
@@ -371,15 +372,15 @@ app.get('/devices', (req, res) => {
       res.status(200).json(results);
     });
 });
-  
+
 // API สำหรับเพิ่มอุปกรณ์ใหม่
 // app.post('/devices', (req, res) => {
 //     const { name, id, status } = req.body;
-  
+
 //     if (!name || !id) {
 //       return res.status(400).send({ message: 'Name and ID are required' });
 //     }
-  
+
 //     pool.query(
 //       'INSERT INTO devices (name, id, status) VALUES (?, ?, ?)',
 //       [name, id, status ? 1 : 0],
@@ -392,12 +393,12 @@ app.get('/devices', (req, res) => {
 //       }
 //     );
 // });
-  
+
 // // API สำหรับอัปเดตข้อมูลอุปกรณ์ในฐานข้อมูล
 app.put('/devices/:id', (req, res) => {
     const deviceId = req.params.id;
     const { front_temp, back_temp, humidity } = req.body;
-  
+
     pool.query(
       'UPDATE device_readings SET front_temp = ?, back_temp = ?, humidity = ? WHERE device_id = ?',
       [front_temp, back_temp, humidity, deviceId],
@@ -439,7 +440,7 @@ app.put('/devices/:id', (req, res) => {
 // API สำหรับลบอุปกรณ์
 // app.delete('/devices/:id', (req, res) => {
 //     const deviceId = req.params.id;
-  
+
 //     pool.query('DELETE FROM devices WHERE device_id = ?', [deviceId], (err, results) => {
 //       if (err) {
 //         console.error('Error deleting device:', err);
@@ -455,7 +456,7 @@ app.put('/devices/:id', (req, res) => {
 // API สำหรับดึงข้อมูลอุปกรณ์ล่าสุดจากฐานข้อมูล
 // app.get('/devices/:deviceId/temperature', (req, res) => {
 //     const deviceId = req.params.deviceId;
-  
+
 //     pool.query(
 //       'SELECT front_temp, back_temp, humidity FROM device_readings WHERE device_id = ? ORDER BY recorded_at DESC LIMIT 1',
 //       [deviceId],
@@ -464,11 +465,11 @@ app.put('/devices/:id', (req, res) => {
 //           console.error('Error fetching device temperature:', err);
 //           return res.status(500).send({ message: 'Database error' });
 //         }
-  
+
 //         if (results.length === 0) {
 //           return res.status(404).send({ message: 'No temperature data found for this device' });
 //         }
-  
+
 //         res.status(200).json(results[0]);
 //       }
 //     );
@@ -499,8 +500,8 @@ app.put('/update-device', (req, res) => {
     console.log(`Updating device: ${deviceId}, New Name: ${deviceName},tar_front: ${targetFrontTemp}`);
 
     const query = `
-      UPDATE devices 
-      SET device_name = ?, target_front_temp = ?, target_back_temp = ?, target_humidity = ? 
+      UPDATE devices
+      SET device_name = ?, target_front_temp = ?, target_back_temp = ?, target_humidity = ?
       WHERE device_id = ?;
     `;
 
