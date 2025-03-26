@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -41,10 +42,12 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   bool isDataReceived = false;
   bool shouldShowNotification = false;
   Map<String, DeviceData> deviceDataMap = {};
+  String? _token;
 
   @override
   void initState() {
     super.initState();
+    _getToken();
 
     _mqttService = MQTTService();
 
@@ -169,6 +172,24 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   Future<int?> _getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('userId');
+  }
+
+  Future<void> _getToken() async {
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      print('Firebase Token Request Started');
+
+      if (token == null) {
+        print('Token is null');
+      } else {
+        setState(() {
+          _token = token;
+        });
+        print('Token successfully retrieved: $token');
+      }
+    } catch (e) {
+      print('Error getting token: $e');
+    }
   }
 
   Future<void> _fetchDevices() async {
