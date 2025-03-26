@@ -24,7 +24,6 @@ class _NotifiRouteState extends State<NotifiRoute> {
   WebSocketChannel? channel;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  String? _token;
 
   @override
   void initState() {
@@ -46,13 +45,6 @@ class _NotifiRouteState extends State<NotifiRoute> {
       // เพิ่ม notification ใหม่เมื่อได้รับข้อความ
       addNotification(message);
       showNotification(message);
-    });
-  }
-
-  Future<void> _getToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    setState(() {
-      _token = token;
     });
   }
 
