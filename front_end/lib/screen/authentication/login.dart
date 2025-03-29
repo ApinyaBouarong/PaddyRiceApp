@@ -73,7 +73,7 @@ class _LoginRouteState extends State<LoginRoute> {
         final deviceId = responseData['deviceId'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
-        await prefs.setInt('user_id', userId);
+        await prefs.setInt('userId', userId);
 
         context.router.replace(BottomNavigationRoute(page: 0));
       } else {

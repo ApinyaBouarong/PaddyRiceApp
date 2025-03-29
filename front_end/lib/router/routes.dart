@@ -86,5 +86,9 @@ class AppRouter extends $AppRouter {
             path: '/otp_profile',
             page: OtpProfileRoute.page,
             transitionsBuilder: TransitionsBuilders.fadeIn),
+            CustomRoute(
+            path: '/detail_noti',
+            page: DetailNotiRoute.page,
+            transitionsBuilder: TransitionsBuilders.fadeIn),
       ];
 }
