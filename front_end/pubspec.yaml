@@ -64,10 +64,11 @@ dependencies:
   flag: ^7.0.0
   device_info_plus: ^10.1.2
   numberpicker: ^2.1.2
-  web_socket_channel: ^2.4.5
+  web_socket_channel: ^3.0.2
   crypto: ^3.0.3
   firebase_messaging: ^15.1.0
   flutter_localized_locales: ^2.0.5
+  qr_code_scanner_plus: ^2.0.10+1
   # esp_smartconfig: ^2.0.4
 
 dev_dependencies:

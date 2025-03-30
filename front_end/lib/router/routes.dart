@@ -30,10 +30,10 @@ class AppRouter extends $AppRouter {
             path: '/notifi',
             page: NotifiRoute.page,
             transitionsBuilder: TransitionsBuilders.fadeIn),
-        // CustomRoute(
-        //     path: '/scan',
-        //     page: ScanRoute.page,
-        //     transitionsBuilder: TransitionsBuilders.fadeIn),
+        CustomRoute(
+            path: '/scan',
+            page: ScanRoute.page,
+            transitionsBuilder: TransitionsBuilders.fadeIn),
         // CustomRoute(
         //     path: '/addDevice',
         //     page: AddDeviceRoute.page,
@@ -85,10 +85,6 @@ class AppRouter extends $AppRouter {
         CustomRoute(
             path: '/otp_profile',
             page: OtpProfileRoute.page,
-            transitionsBuilder: TransitionsBuilders.fadeIn),
-            CustomRoute(
-            path: '/detail_noti',
-            page: DetailNotiRoute.page,
             transitionsBuilder: TransitionsBuilders.fadeIn),
       ];
 }

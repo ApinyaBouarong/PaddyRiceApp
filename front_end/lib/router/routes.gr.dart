@@ -10,27 +10,27 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:auto_route/auto_route.dart' as _i19;
 import 'package:flutter/material.dart' as _i21;
-import 'package:paddy_rice/screen/authentication/home.dart' as _i11;
-import 'package:paddy_rice/screen/authentication/login.dart' as _i12;
+import 'package:paddy_rice/screen/add_device/scan.dart' as _i16;
+import 'package:paddy_rice/screen/authentication/home.dart' as _i10;
+import 'package:paddy_rice/screen/authentication/login.dart' as _i11;
 import 'package:paddy_rice/screen/authentication/signup.dart' as _i18;
 import 'package:paddy_rice/screen/change_password_sigin/change_password.dart'
     as _i4;
 import 'package:paddy_rice/screen/change_password_sigin/forgot_password.dart'
-    as _i10;
-import 'package:paddy_rice/screen/change_password_sigin/otp.dart' as _i15;
+    as _i9;
+import 'package:paddy_rice/screen/change_password_sigin/otp.dart' as _i14;
 import 'package:paddy_rice/screen/device/changDeviceName.dart' as _i2;
-import 'package:paddy_rice/screen/device/deviceNotifiSetting.dart' as _i7;
-import 'package:paddy_rice/screen/nitification/details_noti.dart' as _i6;
-import 'package:paddy_rice/screen/nitification/notification.dart' as _i13;
+import 'package:paddy_rice/screen/device/deviceNotifiSetting.dart' as _i6;
+import 'package:paddy_rice/screen/nitification/notification.dart' as _i12;
 import 'package:paddy_rice/screen/nitification/setting_notification.dart'
     as _i17;
 import 'package:paddy_rice/screen/profile_management/change_password.dart'
     as _i3;
-import 'package:paddy_rice/screen/profile_management/edit_profile.dart' as _i8;
+import 'package:paddy_rice/screen/profile_management/edit_profile.dart' as _i7;
 import 'package:paddy_rice/screen/profile_management/forgot_password.dart'
-    as _i9;
-import 'package:paddy_rice/screen/profile_management/otp_profile.dart' as _i14;
-import 'package:paddy_rice/screen/profile_management/profile.dart' as _i16;
+    as _i8;
+import 'package:paddy_rice/screen/profile_management/otp_profile.dart' as _i13;
+import 'package:paddy_rice/screen/profile_management/profile.dart' as _i15;
 import 'package:paddy_rice/screen/profile_management/verify_password_change.dart'
     as _i5;
 import 'package:paddy_rice/widgets/BottomNavigation.dart' as _i1;
@@ -74,64 +74,53 @@ abstract class $AppRouter extends _i19.RootStackRouter {
         child: _i5.ChangePassword_profileRoute(),
       );
     },
-    DetailNotiRoute.name: (routeData) {
-      final args = routeData.argsAs<DetailNotiRouteArgs>();
-      return _i19.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i6.DetailNotiRoute(
-          key: args.key,
-          deviceName: args.deviceName,
-          sensorType: args.sensorType,
-        ),
-      );
-    },
     DeviceNotifiSettingRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i7.DeviceNotifiSettingRoute(),
+        child: const _i6.DeviceNotifiSettingRoute(),
       );
     },
     EditProfileRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i8.EditProfileRoute(),
+        child: const _i7.EditProfileRoute(),
       );
     },
     ForgotProfileRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i9.ForgotProfileRoute(),
+        child: const _i8.ForgotProfileRoute(),
       );
     },
     ForgotRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i10.ForgotRoute(),
+        child: const _i9.ForgotRoute(),
       );
     },
     HomeRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i11.HomeRoute(),
+        child: const _i10.HomeRoute(),
       );
     },
     LoginRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i12.LoginRoute(),
+        child: const _i11.LoginRoute(),
       );
     },
     NotifiRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i13.NotifiRoute(),
+        child: const _i12.NotifiRoute(),
       );
     },
     OtpProfileRoute.name: (routeData) {
       final args = routeData.argsAs<OtpProfileRouteArgs>();
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i14.OtpProfileRoute(
+        child: _i13.OtpProfileRoute(
           key: args.key,
           inputValue: args.inputValue,
           otp: args.otp,
@@ -142,7 +131,7 @@ abstract class $AppRouter extends _i19.RootStackRouter {
       final args = routeData.argsAs<OtpRouteArgs>();
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i15.OtpRoute(
+        child: _i14.OtpRoute(
           key: args.key,
           inputValue: args.inputValue,
           otp: args.otp,
@@ -152,7 +141,13 @@ abstract class $AppRouter extends _i19.RootStackRouter {
     ProfileRoute.name: (routeData) {
       return _i19.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i16.ProfileRoute(),
+        child: const _i15.ProfileRoute(),
+      );
+    },
+    ScanRoute.name: (routeData) {
+      return _i19.AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const _i16.ScanRoute(),
       );
     },
     SettingNotifiRoute.name: (routeData) {
@@ -273,50 +268,7 @@ class ChangePassword_profileRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i6.DetailNotiRoute]
-class DetailNotiRoute extends _i19.PageRouteInfo<DetailNotiRouteArgs> {
-  DetailNotiRoute({
-    _i21.Key? key,
-    required String deviceName,
-    required String sensorType,
-    List<_i19.PageRouteInfo>? children,
-  }) : super(
-          DetailNotiRoute.name,
-          args: DetailNotiRouteArgs(
-            key: key,
-            deviceName: deviceName,
-            sensorType: sensorType,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'DetailNotiRoute';
-
-  static const _i19.PageInfo<DetailNotiRouteArgs> page =
-      _i19.PageInfo<DetailNotiRouteArgs>(name);
-}
-
-class DetailNotiRouteArgs {
-  const DetailNotiRouteArgs({
-    this.key,
-    required this.deviceName,
-    required this.sensorType,
-  });
-
-  final _i21.Key? key;
-
-  final String deviceName;
-
-  final String sensorType;
-
-  @override
-  String toString() {
-    return 'DetailNotiRouteArgs{key: $key, deviceName: $deviceName, sensorType: $sensorType}';
-  }
-}
-
-/// generated route for
-/// [_i7.DeviceNotifiSettingRoute]
+/// [_i6.DeviceNotifiSettingRoute]
 class DeviceNotifiSettingRoute extends _i19.PageRouteInfo<void> {
   const DeviceNotifiSettingRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -330,7 +282,7 @@ class DeviceNotifiSettingRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i8.EditProfileRoute]
+/// [_i7.EditProfileRoute]
 class EditProfileRoute extends _i19.PageRouteInfo<void> {
   const EditProfileRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -344,7 +296,7 @@ class EditProfileRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i9.ForgotProfileRoute]
+/// [_i8.ForgotProfileRoute]
 class ForgotProfileRoute extends _i19.PageRouteInfo<void> {
   const ForgotProfileRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -358,7 +310,7 @@ class ForgotProfileRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i10.ForgotRoute]
+/// [_i9.ForgotRoute]
 class ForgotRoute extends _i19.PageRouteInfo<void> {
   const ForgotRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -372,7 +324,7 @@ class ForgotRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i11.HomeRoute]
+/// [_i10.HomeRoute]
 class HomeRoute extends _i19.PageRouteInfo<void> {
   const HomeRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -386,7 +338,7 @@ class HomeRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i12.LoginRoute]
+/// [_i11.LoginRoute]
 class LoginRoute extends _i19.PageRouteInfo<void> {
   const LoginRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -400,7 +352,7 @@ class LoginRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i13.NotifiRoute]
+/// [_i12.NotifiRoute]
 class NotifiRoute extends _i19.PageRouteInfo<void> {
   const NotifiRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -414,7 +366,7 @@ class NotifiRoute extends _i19.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i14.OtpProfileRoute]
+/// [_i13.OtpProfileRoute]
 class OtpProfileRoute extends _i19.PageRouteInfo<OtpProfileRouteArgs> {
   OtpProfileRoute({
     _i21.Key? key,
@@ -457,7 +409,7 @@ class OtpProfileRouteArgs {
 }
 
 /// generated route for
-/// [_i15.OtpRoute]
+/// [_i14.OtpRoute]
 class OtpRoute extends _i19.PageRouteInfo<OtpRouteArgs> {
   OtpRoute({
     _i21.Key? key,
@@ -500,7 +452,7 @@ class OtpRouteArgs {
 }
 
 /// generated route for
-/// [_i16.ProfileRoute]
+/// [_i15.ProfileRoute]
 class ProfileRoute extends _i19.PageRouteInfo<void> {
   const ProfileRoute({List<_i19.PageRouteInfo>? children})
       : super(
@@ -509,6 +461,20 @@ class ProfileRoute extends _i19.PageRouteInfo<void> {
         );
 
   static const String name = 'ProfileRoute';
+
+  static const _i19.PageInfo<void> page = _i19.PageInfo<void>(name);
+}
+
+/// generated route for
+/// [_i16.ScanRoute]
+class ScanRoute extends _i19.PageRouteInfo<void> {
+  const ScanRoute({List<_i19.PageRouteInfo>? children})
+      : super(
+          ScanRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ScanRoute';
 
   static const _i19.PageInfo<void> page = _i19.PageInfo<void>(name);
 }
