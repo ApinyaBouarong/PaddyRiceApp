@@ -97,147 +97,297 @@ class _NotifiRouteState extends State<NotifiRoute> {
     final String time = data['time'] as String? ?? '';
     final double? temperature = data['temperature'] as double?;
 
-    return GestureDetector(
-      onTap: () {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true, // อนุญาตให้ BottomSheet ขยายได้
-          builder: (context) {
-            return Container(
-              height: MediaQuery.of(context).size.height *
-                  0.9, // กำหนดความสูงเกือบเต็มหน้าจอ (ปรับตามต้องการ)
-              decoration: BoxDecoration(
-                color: fill_color,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+ return GestureDetector(
+  onTap: () {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.9,
+          decoration: BoxDecoration(
+            color: fill_color,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0), // เพิ่มระยะห่างจากส่วนหัว
+                  child: Row(
+                    children: [
+                      SizedBox(width: 8),
+                      SizedBox(height: 8),
+                      if (sensorType == 'humidity')
+                        Image.asset(
+                          'lib/assets/icon/Humidity.jpg',
+                          width: 60,
+                          height: 60,
+                        )
+                      else if (sensorType == 'temp_front' ||
+                          sensorType == 'temp_back')
+                        Image.asset(
+                          'lib/assets/icon/Temp.jpg',
+                          width: 60,
+                          height: 60,
+                        )
+                      else
+                        SizedBox(
+                          width: 60,
+                          height: 60,
+                        ),
+                      SizedBox(width: 16),
+                      Text(
+                        '$deviceName',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: fontcolor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                // ข้อมูล Sensor
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 8),
+                      Text(
+                        'Sensor :',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: fontcolor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          '$sensorType',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: fontcolor,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // ข้อมูล Date
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 8),
+                      Text(
+                        'Date :',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: fontcolor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          '$date',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: fontcolor,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // ข้อมูล Time
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 8),
+                      Text(
+                        'Time :',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: fontcolor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          '$time',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: fontcolor,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // ข้อมูล Target (ถ้ามี)
+                // if (target != null && target.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 8),
+                        Text(
+                          'Target :',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: fontcolor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        // Expanded(
+                        //   child: Text(
+                        //     '$target',
+                        //     style: TextStyle(
+                        //       fontSize: 16,
+                        //       color: fontcolor,
+                        //     ),
+                        //     textAlign: TextAlign.right,
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                  ),
+                // ข้อมูล Current (ถ้ามี temperature)
+                
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(
                       children: [
                         SizedBox(width: 8),
-                        Image.asset(
-                          'lib/assets/icon/Humidity.jpg',
-                          width: 80,
-                          height: 80,
-                        ),
-                        SizedBox(width: 16),
                         Text(
-                          '$deviceName',
+                          'Current :',
                           style: TextStyle(
-                              fontSize: 20,
+                            fontSize: 16,
+                            color: fontcolor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${temperature != null ? '${temperature.toStringAsFixed(0)}°C' : '65.0°C'}',
+                            // '${temperature != null ? '${temperature.toStringAsFixed(0)}°C' : ''}',
+                            style: TextStyle(
+                              fontSize: 16,
                               color: fontcolor,
-                              fontWeight: FontWeight.bold),
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                // ห่อ Text แรกด้วย Row เพื่อเพิ่ม SizedBox ด้านหน้า
-                                children: [
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Sensor Type:',
-                                    style: TextStyle(
-                                        fontSize: 16, color: fontcolor,fontWeight: FontWeight.bold ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  // SizedBox(width: 8),
-                                  Text(
-                                    '$sensorType',
-                                    style: TextStyle(
-                                        fontSize: 16, color: fontcolor,fontWeight: FontWeight.normal),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          // ... (ส่วนของ Text อื่นๆ ที่คุณต้องการแสดง) ...
-                        ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Divider(color: Colors.grey[300]),
+                ),
+                // ส่วน Detail
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(width: 8),
+                      Text(
+                        'Detail :',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: fontcolor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                      Expanded(
+                        child: Text(
+                          '$message',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: fontcolor,
+                          ),
+                          textAlign: TextAlign.right,
+                          softWrap: true,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
+                ),
+              ],
+            ),
+          ),
         );
       },
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        color: fill_color,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  },
+  child: Card(
+    margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    color: fill_color,
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            deviceName,
+            style: TextStyle(
+              color: fontcolor,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            getSensorText(sensorType),
+            style: TextStyle(
+              color: fontcolor,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message +
+                (temperature != null
+                    ? " ${temperature.toStringAsFixed(0)}°C"
+                    : ""),
+            style: TextStyle(
+              color: unnecessary_colors,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
-                deviceName,
+                "${formatDate(date)}, $time",
                 style: TextStyle(
-                  color: fontcolor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  color: Colors.grey[600],
+                  fontSize: 12,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                getSensorText(sensorType),
-                style: TextStyle(
-                  color: fontcolor,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message +
-                    (temperature != null
-                        ? " ${temperature.toStringAsFixed(0)}°C"
-                        : ""),
-                style: TextStyle(
-                  color: unnecessary_colors,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    "${formatDate(date)}, $time",
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
-        ),
+        ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

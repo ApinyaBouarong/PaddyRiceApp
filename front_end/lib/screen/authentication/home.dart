@@ -370,44 +370,44 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
               ],
             ),
           ),
-          // Padding(
-          //   padding: const EdgeInsets.only(right: 16),
-          //   child: DropdownButtonHideUnderline(
-          //     child: DropdownButton2(
-          //       customButton: Icon(Icons.more_vert, size: 24, color: iconcolor),
-          //       items: [
-          //         ...MenuItems.firstItems
-          //             .map((item) => DropdownMenuItem<MenuItem>(
-          //                   value: item,
-          //                   child: MenuItems.buildItem(item),
-          //                 )),
-          //       ],
-          //       // onChanged: (value) {
-          //       //   final menuItem = value as MenuItem;
-          //       //   if (menuItem.text == localizations.bluetooth) {
-          //       //     context.router.replaceNamed('/addDevice');
-          //       //   } else if (menuItem.text == localizations.qr_code) {
-          //       //     context.router.replaceNamed('/scan');
-          //       //   }
-          //       // },
-          //       dropdownStyleData: DropdownStyleData(
-          //         width: 160,
-          //         padding: const EdgeInsets.symmetric(vertical: 6),
-          //         decoration: BoxDecoration(
-          //           borderRadius: BorderRadius.circular(4),
-          //           color: fill_color,
-          //         ),
-          //         offset: const Offset(-144, 8),
-          //       ),
-          //       menuItemStyleData: MenuItemStyleData(
-          //         customHeights: [
-          //           ...List<double>.filled(MenuItems.firstItems.length, 48),
-          //         ],
-          //         padding: const EdgeInsets.only(left: 16, right: 16),
-          //       ),
-          //     ),
-          //   ),
-          // ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton2(
+                customButton: Icon(Icons.more_vert, size: 24, color: iconcolor),
+                items: [
+                  ...MenuItems.firstItems
+                      .map((item) => DropdownMenuItem<MenuItem>(
+                            value: item,
+                            child: MenuItems.buildItem(item),
+                          )),
+                ],
+                onChanged: (value) {
+                  final menuItem = value as MenuItem;
+                  if (menuItem.text == localizations.bluetooth) {
+                    context.router.replaceNamed('/addDevice');
+                  } else if (menuItem.text == localizations.qr_code) {
+                    context.router.replaceNamed('/scan');
+                  }
+                },
+                dropdownStyleData: DropdownStyleData(
+                  width: 160,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: fill_color,
+                  ),
+                  offset: const Offset(-144, 8),
+                ),
+                menuItemStyleData: MenuItemStyleData(
+                  customHeights: [
+                    ...List<double>.filled(MenuItems.firstItems.length, 48),
+                  ],
+                  padding: const EdgeInsets.only(left: 16, right: 16),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
       backgroundColor: maincolor,
