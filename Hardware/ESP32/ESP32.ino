@@ -9,7 +9,7 @@
 
 const char* ssid = "DESKTOP-PADDY";
 const char* password = "36#96T4p";
-const char* mqtt_server = "192.168.0.100";
+const char* mqtt_server = "192.168.137.28";
 const char* mqtt_topic = "sensor/data";
 const int port = 1883;
 

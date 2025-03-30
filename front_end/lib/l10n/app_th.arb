@@ -70,11 +70,11 @@
   "no_qr_code": "ไม่มีรหัส QR",
 
   "notification": "การแจ้งเตือน",
-  "temp_back": "อุณหภูมิด้านหลัง",
+  "temp_back": "เซ็นเซอร์วัดความอุณภูมิ (ด้านหลัง)",
   "temp_exceeds": "อุณหภูมิเกิน",
-  "temp_front": "อุณหภูมิด้านหน้า",
-  "humidity": "ความชื้นเกิน 12%",
-  "monitor_dryness": "ตรวจสอบระดับความแห้ง",
+  "temp_front": "เซ็นเซอร์วัดความอุณภูมิ (ด้านหลัง)",
+  "humidity": "เซ็นเซอร์วัดความชื้น",
+  "Monitoring for potential dryness.": "ตรวจสอบระดับความแห้ง",
   "no_notifications": "ไม่มีการแจ้งเตือน",
 
   "notifications": "การแจ้งเตือน",
@@ -187,5 +187,7 @@
   "otp_send_failed": "การส่ง OTP ล้มเหลว",
   "failed_update_target": "ไม่สามารถอัปเดตค่าเป้าหมายได้",
   "updated_Successfully": "อัปเดตสำเร็จแล้ว"
+
+
 
 }
