@@ -25,7 +25,7 @@ const clientMqtt = mqtt.connect(mqttHost, {
 });
 //Firebase Cloud Messaging ไม่ใช้ webSocket
 const app = express();
-const port = 3000;
+const port = 3333;
 const wss = new WebSocket.Server({ port: 8080 });
 let mqttData = {};
 

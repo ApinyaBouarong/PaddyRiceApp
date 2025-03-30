@@ -7,6 +7,7 @@ import 'package:paddy_rice/constants/color.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/screen/device/deviceState.dart';
+import 'package:paddy_rice/services/FCMTokenService.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:paddy_rice/widgets/model.dart';
 import 'package:paddy_rice/widgets/ChoiceDialog.dart';
@@ -42,12 +43,10 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   bool isDataReceived = false;
   bool shouldShowNotification = false;
   Map<String, DeviceData> deviceDataMap = {};
-  String? _token;
 
   @override
   void initState() {
     super.initState();
-    _getToken();
 
     _mqttService = MQTTService();
 
@@ -77,6 +76,25 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       print('Error connecting to MQTT: $error');
     });
     _startMqttTimeoutTimer();
+  }
+
+  void setupFCM() {
+    print("Start FCM FCM FCM FCM");
+    final fcmTokenService = FCMTokenService();
+
+    // Get initial token
+    fcmTokenService.getToken().then((token) {
+      if (token != null) {
+        print('Initial FCM Token: $token');
+        // ส่ง token ไปยัง server
+      }
+    });
+
+    // Start listening for token refreshes
+    fcmTokenService.initTokenRefresh();
+
+    // Optional: Subscribe to topics
+    fcmTokenService.subscribeToTopic('all_users');
   }
 
   void _startMqttTimeoutTimer() {
@@ -172,24 +190,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   Future<int?> _getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('userId');
-  }
-
-  Future<void> _getToken() async {
-    try {
-      String? token = await FirebaseMessaging.instance.getToken();
-      print('Firebase Token Request Started');
-
-      if (token == null) {
-        print('Token is null');
-      } else {
-        setState(() {
-          _token = token;
-        });
-        print('Token successfully retrieved: $token');
-      }
-    } catch (e) {
-      print('Error getting token: $e');
-    }
   }
 
   Future<void> _fetchDevices() async {
