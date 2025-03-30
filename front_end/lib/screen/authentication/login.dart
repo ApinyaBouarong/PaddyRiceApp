@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:auto_route/auto_route.dart';
@@ -30,6 +31,13 @@ class _LoginRouteState extends State<LoginRoute> {
   TextEditingController _passwordController = TextEditingController();
   bool _isEmailOrPhoneError = false;
   bool _isPasswordError = false;
+  String? _token;
+
+  @override
+  void initState() {
+    super.initState();
+    _getToken();
+  }
 
   String? _errorMessage;
   Locale _locale = Locale('en');
@@ -41,6 +49,24 @@ class _LoginRouteState extends State<LoginRoute> {
       _locale = isEnglish ? Locale('en') : Locale('th');
       MyApp.setLocale(context, _locale);
     });
+  }
+
+  Future<void> _getToken() async {
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      print('<-----Firebase Token Request Started----->');
+
+      if (token == null) {
+        print('Token is null');
+      } else {
+        setState(() {
+          _token = token;
+        });
+        print('Token successfully retrieved: $token');
+      }
+    } catch (e) {
+      print('Error getting token: $e');
+    }
   }
 
   Future<void> login() async {
@@ -73,7 +99,7 @@ class _LoginRouteState extends State<LoginRoute> {
         final deviceId = responseData['deviceId'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
-        await prefs.setInt('user_id', userId);
+        await prefs.setInt('userId', userId);
 
         context.router.replace(BottomNavigationRoute(page: 0));
       } else {

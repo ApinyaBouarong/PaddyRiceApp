@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "230191322087",
+    "project_id": "paddyriceapp-678c7",
+    "storage_bucket": "paddyriceapp-678c7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:230191322087:android:70cba6cb9ad19071a16342",
+        "android_client_info": {
+          "package_name": "com.example.front_end"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcnGvNar1nKztVrHYyEQnGAtEJlTvnNjA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

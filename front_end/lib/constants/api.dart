@@ -3,8 +3,8 @@ import 'dart:io';
 class ApiConstants {
   static String get baseUrl {
     if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3000';
-      // return 'http://192.168.2.44:3333';
+      return 'http://10.0.2.2:3333';
+      // return 'http://192.168.2.44:3003';
       // return 'http://192.168.137.91:3003';
     } else if (Platform.isIOS) {
       return 'http://192.168.137:3000';
