@@ -12,26 +12,8 @@ import 'package:paddy_rice/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // setupFCM();
+  await Firebase.initializeApp();
   runApp(MyApp());
-}
-
-void setupFCM() {
-  final fcmTokenService = FCMTokenService();
-
-  // Get initial token
-  fcmTokenService.getToken().then((token) {
-    if (token != null) {
-      print('Initial FCM Token: $token');
-      // ส่ง token ไปยัง server
-    }
-  });
-
-  // Start listening for token refreshes
-  fcmTokenService.initTokenRefresh();
-
-  // Optional: Subscribe to topics
-  fcmTokenService.subscribeToTopic('all_users');
 }
 
 // Fetch both target values and current values for a specific deviceId

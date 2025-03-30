@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
@@ -51,7 +52,7 @@ class _LoginRouteState extends State<LoginRoute> {
     });
   }
 
-  Future<void> _getToken() async {
+  Future<Null> _getToken() async {
     try {
       String? token = await FirebaseMessaging.instance.getToken();
       print('<-----Firebase Token Request Started----->');
@@ -64,6 +65,9 @@ class _LoginRouteState extends State<LoginRoute> {
         });
         print('Token successfully retrieved: $token');
       }
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      String? idLogin = preferences.getString('userId');
+      print("idLogin: $idLogin");
     } catch (e) {
       print('Error getting token: $e');
     }
