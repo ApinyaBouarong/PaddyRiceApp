@@ -1,0 +1,2 @@
+C:/nay/Newprofect/PaddyRiceApp/front_end/android/app/.cxx/Debug/734v4t2s/x86_64/CMakeFiles/edit_cache.dir
+C:/nay/Newprofect/PaddyRiceApp/front_end/android/app/.cxx/Debug/734v4t2s/x86_64/CMakeFiles/rebuild_cache.dir

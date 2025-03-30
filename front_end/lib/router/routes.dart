@@ -30,10 +30,10 @@ class AppRouter extends $AppRouter {
             path: '/notifi',
             page: NotifiRoute.page,
             transitionsBuilder: TransitionsBuilders.fadeIn),
-        // CustomRoute(
-        //     path: '/scan',
-        //     page: ScanRoute.page,
-        //     transitionsBuilder: TransitionsBuilders.fadeIn),
+        CustomRoute(
+            path: '/scan',
+            page: ScanRoute.page,
+            transitionsBuilder: TransitionsBuilders.fadeIn),
         // CustomRoute(
         //     path: '/addDevice',
         //     page: AddDeviceRoute.page,
