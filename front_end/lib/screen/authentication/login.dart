@@ -66,8 +66,30 @@ class _LoginRouteState extends State<LoginRoute> {
         print('Token successfully retrieved: $token');
       }
       SharedPreferences preferences = await SharedPreferences.getInstance();
-      String? idLogin = preferences.getString('userId');
+      int? userIdInt = preferences.getInt('userId');
+      String? idLogin = userIdInt?.toString();
+
       print("idLogin: $idLogin");
+      int? idLoginInt = userIdInt;
+
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/sendToken'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'userId': idLoginInt,
+          'token': token,
+        }),
+      );
+      print('API Response Status Code: ${response.statusCode}');
+      print('API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('Token sent successfully');
+      } else {
+        print('Failed to send token: ${response.body}');
+      }
     } catch (e) {
       print('Error getting token: $e');
     }

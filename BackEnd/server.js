@@ -25,8 +25,8 @@ const clientMqtt = mqtt.connect(mqttHost, {
 });
 //Firebase Cloud Messaging ไม่ใช้ webSocket
 const app = express();
-const port = 3333;
-const wss = new WebSocket.Server({ port: 8080 });
+const port = 3030;
+const wss = new WebSocket.Server({ port: 8088 });
 let mqttData = {};
 
 app.use(cors());
@@ -101,6 +101,39 @@ clientMqtt.on('error', (err) => {
 //       res.json(results[0]);
 //     });
 // });
+
+app.post('/sendToken', (req, res) => {
+    console.log('Received request to send token');
+    const { userId, token } = req.body;
+
+    if (!token || !userId) {
+        return res.status(400).send({ message: 'Token and User ID are required' });
+    }
+
+    const query = 'SELECT user_id FROM users WHERE user_id = ?';
+    pool.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).send({ message: 'Database error' });
+        }
+        if (results.length === 0) {
+            return res.status(404).send({ message: 'User not found' });
+        }
+
+        const updateQuery = 'UPDATE users SET token = ? WHERE user_id = ?';
+        pool.query(updateQuery, [token, userId], (updateErr, updateResults) => {
+            if (updateErr) {
+                console.error('Database update error:', updateErr);
+                return res.status(500).send({ message: 'Database error' });
+            }
+            if (updateResults.affectedRows === 0) {
+                return res.status(500).send({ message: 'Failed to update token' });
+            }
+            res.status(200).send({ message: 'Token updated successfully' });
+            console.log('Token updated successfully:', token);
+        });
+    });
+});
 
 // ฟังก์ชันสำหรับสร้าง OTP แบบสุ่ม
 function generateOTP() {

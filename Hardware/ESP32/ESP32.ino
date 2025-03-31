@@ -77,17 +77,17 @@ void setup() {
   Serial.println("\nTime synced successfully.");
 
   // Initialize WiFi
-  setup_wifi();
+  // setup_wifi();
 
   // Setup MQTT
-  client.setServer(mqtt_server, port);
+  // client.setServer(mqtt_server, port);
 }
 
 void loop() {
-  if (!client.connected()) {
-    reconnect_mqtt();
-  }
-  client.loop();
+  // if (!client.connected()) {
+  //   reconnect_mqtt();
+  // }
+  // client.loop();
   SensorData sensor;
   Config config;
   config.delaySensor = 200;
@@ -106,9 +106,9 @@ void loop() {
 
   updateLCD(sensor.frontTemp, sensor.rearTemp, sensor.moisture);
 
-  sendToMQTT(mqtt_topic, device_ID, formattedTime.c_str(), sensor.frontTemp, sensor.rearTemp, sensor.moisture);
+  // sendToMQTT(mqtt_topic, device_ID, formattedTime.c_str(), sensor.frontTemp, sensor.rearTemp, sensor.moisture);
 
-  fetchDataFromAPI();
+  // fetchDataFromAPI();
 
   delay(7000);
 }

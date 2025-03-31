@@ -78,25 +78,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     _startMqttTimeoutTimer();
   }
 
-  void setupFCM() {
-    print("Start FCM FCM FCM FCM");
-    final fcmTokenService = FCMTokenService();
-
-    // Get initial token
-    fcmTokenService.getToken().then((token) {
-      if (token != null) {
-        print('Initial FCM Token: $token');
-        // ส่ง token ไปยัง server
-      }
-    });
-
-    // Start listening for token refreshes
-    fcmTokenService.initTokenRefresh();
-
-    // Optional: Subscribe to topics
-    fcmTokenService.subscribeToTopic('all_users');
-  }
-
   void _startMqttTimeoutTimer() {
     _mqttTimeoutTimer =
         Timer.periodic(Duration(seconds: _mqttTimeoutDuration), (timer) {
