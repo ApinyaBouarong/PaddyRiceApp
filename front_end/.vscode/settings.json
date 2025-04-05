@@ -1,3 +1,7 @@
 {
+<<<<<<< HEAD
   "dart.flutterSdkPath": ".fvm\\versions\\3.29.2"
+=======
+  "dart.flutterSdkPath": ".fvm/versions/3.29.2"
+>>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
 }

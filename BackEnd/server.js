@@ -8,7 +8,11 @@ const MySQLStore = require('express-mysql-session')(session);
 const mailjet = require('node-mailjet');
 const mqtt = require('mqtt');
 const WebSocket = require('ws');
+<<<<<<< HEAD
 
+=======
+require("dotenv").config();
+>>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
 const mqttHost = 'mqtt://192.168.137.91';
 const mqttPort = 1883;
 const mqttTopic = 'sensor/data';
@@ -37,7 +41,7 @@ const pool = mysql.createPool({
   host: '127.0.0.1',
   user: 'root',
   password: 'root',
-  database: 'paddy_app',
+  database: 'paddy_rice',
 });
 
 const sessionStore = new MySQLStore({}, pool.promise());
@@ -134,6 +138,50 @@ app.post('/sendToken', (req, res) => {
         });
     });
 });
+
+const admin = require('firebase-admin');
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+// **ไม่ต้องใช้ express.json() แล้ว เนื่องจากเราจะดึงข้อมูลจาก Query Parameters**
+app.use(express.json());
+
+app.post('/send-notification', async (req, res) => {
+  const token = req.body.token;
+  const title = req.body.title;
+  const body = req.body.body;
+
+  console.log('Received request to send notification:', { token, title, body });
+
+//   if (!token || !title || !body) {
+//     return res.status(400).json({ error: 'Missing required parameters (token, title, body)' });
+//   }
+
+  try {
+    const message = {
+      notification: {
+        title: title,
+        body: body,
+      },
+      token: token,
+    };
+
+    const response = await admin.messaging().send(message);
+    console.log('Successfully sent message notification:', response);
+    res.status(200).json({ message: 'Notification sent successfully', response: response });
+  } catch (error) {
+    console.error('Error sending message notification:', error);
+    res.status(500).json({ error: 'Failed to send notification', details: error.message });
+  }
+});
+  
+// app.listen(port, '0.0.0.0', () => {
+//     console.log(`Server running on http://localhost:${port}`);
+//   });
+
 
 // ฟังก์ชันสำหรับสร้าง OTP แบบสุ่ม
 function generateOTP() {

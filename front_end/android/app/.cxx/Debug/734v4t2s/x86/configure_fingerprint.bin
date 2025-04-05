@@ -2,6 +2,7 @@ C/C++ Structured Logd
 b
 `C:\Users\Lenovo\fvm\versions\3.29.2\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	çšº»Þ2§ ‰þâ—Ý2m
 k
 iC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\additional_project_files.txt	èšº»Þ2 Á£ž˜Ý2j
@@ -26,3 +27,29 @@ a
 _C:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\prefab_config.json	èšº»Þ2( Æ£ž˜Ý2h
 f
 dC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\symbol_folder_index.txt	èšº»Þ2[ Æ£ž˜Ý2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	¡‚þÖß2§ ‰þâ—Ý2m
+k
+iC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\additional_project_files.txt	¡‚þÖß2 “¶ùÕÞ2j
+h
+fC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\android_gradle_build.json	¡‚þÖß2Õ ™¶ùÕÞ2o
+m
+kC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\android_gradle_build_mini.json	¡‚þÖß2ì ¤¶ùÕÞ2\
+Z
+XC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\build.ninja	¡‚þÖß2™¬ õ²ùÕÞ2`
+^
+\C:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\build.ninja.txt	¢‚þÖß2e
+c
+aC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\build_file_index.txt	¢‚þÖß2` ­¶ùÕÞ2f
+d
+bC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\compile_commands.json	¢‚þÖß2	j
+h
+fC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\compile_commands.json.bin	¢‚þÖß2
+p
+n
+lC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\metadata_generation_command.txt	¢‚þÖß2ê §¶ùÕÞ2c
+a
+_C:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\prefab_config.json	¢‚þÖß2( §¶ùÕÞ2h
+f
+dC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\x86\symbol_folder_index.txt	¢‚þÖß2[ ¨¶ùÕÞ2
+>>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896

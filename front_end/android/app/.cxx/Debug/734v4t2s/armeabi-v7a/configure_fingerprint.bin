@@ -2,6 +2,7 @@ C/C++ Structured Logd
 b
 `C:\Users\Lenovo\fvm\versions\3.29.2\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	Ïšº»Þ2§ ‰þâ—Ý2u
 s
 qC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\additional_project_files.txt	Ïšº»Þ2 •—ž˜Ý2r
@@ -26,3 +27,29 @@ i
 gC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\prefab_config.json	Ïšº»Þ2( Ÿ—ž˜Ý2p
 n
 lC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\symbol_folder_index.txt	Ïšº»Þ2c Ÿ—ž˜Ý2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ÒþÖß2§ ‰þâ—Ý2u
+s
+qC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\additional_project_files.txt	ÒþÖß2 ŸÜøÕÞ2r
+p
+nC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\android_gradle_build.json	ÒþÖß2å ÐÜøÕÞ2w
+u
+sC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\android_gradle_build_mini.json	ÒþÖß2ü àÜøÕÞ2d
+b
+`C:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\build.ninja	ÒþÖß2Á¬ „ØøÕÞ2h
+f
+dC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\build.ninja.txt	ÓþÖß2m
+k
+iC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\build_file_index.txt	ÓþÖß2` èÜøÕÞ2n
+l
+jC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\compile_commands.json	ÓþÖß2	r
+p
+nC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\compile_commands.json.bin	ÓþÖß2
+x
+v
+tC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\metadata_generation_command.txt	ÓþÖß2’ äÜøÕÞ2k
+i
+gC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\prefab_config.json	ÓþÖß2( åÜøÕÞ2p
+n
+lC:\nay\Newprofect\PaddyRiceApp\front_end\android\app\.cxx\Debug\734v4t2s\armeabi-v7a\symbol_folder_index.txt	ÓþÖß2c èÜøÕÞ2
+>>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
