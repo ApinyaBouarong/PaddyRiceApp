@@ -8,11 +8,6 @@ const MySQLStore = require('express-mysql-session')(session);
 const mailjet = require('node-mailjet');
 const mqtt = require('mqtt');
 const WebSocket = require('ws');
-<<<<<<< HEAD
-
-=======
-require("dotenv").config();
->>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
 const mqttHost = 'mqtt://192.168.137.91';
 const mqttPort = 1883;
 const mqttTopic = 'sensor/data';

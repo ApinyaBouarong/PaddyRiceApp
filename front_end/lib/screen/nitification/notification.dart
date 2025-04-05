@@ -18,15 +18,6 @@ class NotifiRoute extends StatefulWidget {
 
 class _NotifiRouteState extends State<NotifiRoute> {
   final Map<String, dynamic> localizationsData = {
-<<<<<<< HEAD
-    "humidity": "Humidity monitoring Senser",
-    "temp_back": "Back Tempereture Monitoring Sensor",
-    "temp_front": "Front Tempereture Monitoring Sensor",
-  };
-  final Map<String, dynamic> jsonData = {
-    'deviceName': "Device 2",
-    'sensorType': "humidity", // ใช้ key จาก localizationsData
-=======
     "humidity_Senser": "Humidity monitoring Senser",
     "temp_back_Senser": "Back Tempereture Monitoring Sensor",
     "temp_front_Senser": "Front Tempereture Monitoring Sensor",
@@ -34,7 +25,6 @@ class _NotifiRouteState extends State<NotifiRoute> {
   final Map<String, dynamic> jsonData = {
     'deviceName': "Device 2",
     'sensorType': "humidity_senser", // ใช้ key จาก localizationsData
->>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
     'message': "Monitoring for potential dryness.",
     'date': "13 August 2024",
     'time': "10:30 am",
@@ -42,11 +32,7 @@ class _NotifiRouteState extends State<NotifiRoute> {
 
   final Map<String, dynamic> jsonData2 = {
     'deviceName': "Device 1",
-<<<<<<< HEAD
-    'sensorType': "temp_front", // ใช้ key จาก localizationsData
-=======
     'sensorType': "temp_front_senser", // ใช้ key จาก localizationsData
->>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
     'message':
         "Temperature exceeds ${65}°C, please take action.", // แทรกค่า temperature
     // 'temperature': 65.6,
@@ -111,300 +97,6 @@ class _NotifiRouteState extends State<NotifiRoute> {
     final String time = data['time'] as String? ?? '';
     final double? temperature = data['temperature'] as double?;
 
-<<<<<<< HEAD
- return GestureDetector(
-  onTap: () {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.9,
-          decoration: BoxDecoration(
-            color: fill_color,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0), // เพิ่มระยะห่างจากส่วนหัว
-                  child: Row(
-                    children: [
-                      SizedBox(width: 8),
-                      SizedBox(height: 8),
-                      if (sensorType == 'humidity')
-                        Image.asset(
-                          'lib/assets/icon/Humidity.jpg',
-                          width: 60,
-                          height: 60,
-                        )
-                      else if (sensorType == 'temp_front' ||
-                          sensorType == 'temp_back')
-                        Image.asset(
-                          'lib/assets/icon/Temp.jpg',
-                          width: 60,
-                          height: 60,
-                        )
-                      else
-                        SizedBox(
-                          width: 60,
-                          height: 60,
-                        ),
-                      SizedBox(width: 16),
-                      Text(
-                        '$deviceName',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: fontcolor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // ข้อมูล Sensor
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 8),
-                      Text(
-                        'Sensor :',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: fontcolor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '$sensorType',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: fontcolor,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // ข้อมูล Date
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 8),
-                      Text(
-                        'Date :',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: fontcolor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '$date',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: fontcolor,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // ข้อมูล Time
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 8),
-                      Text(
-                        'Time :',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: fontcolor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '$time',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: fontcolor,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // ข้อมูล Target (ถ้ามี)
-                // if (target != null && target.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(width: 8),
-                        Text(
-                          'Target :',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: fontcolor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        // Expanded(
-                        //   child: Text(
-                        //     '$target',
-                        //     style: TextStyle(
-                        //       fontSize: 16,
-                        //       color: fontcolor,
-                        //     ),
-                        //     textAlign: TextAlign.right,
-                        //   ),
-                        // ),
-                      ],
-                    ),
-                  ),
-                // ข้อมูล Current (ถ้ามี temperature)
-                
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 8),
-                        Text(
-                          'Current :',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: fontcolor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            '${temperature != null ? '${temperature.toStringAsFixed(0)}°C' : '65.0°C'}',
-                            // '${temperature != null ? '${temperature.toStringAsFixed(0)}°C' : ''}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: fontcolor,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Divider(color: Colors.grey[300]),
-                ),
-                // ส่วน Detail
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(width: 8),
-                      Text(
-                        'Detail :',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: fontcolor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '$message',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: fontcolor,
-                          ),
-                          textAlign: TextAlign.right,
-                          softWrap: true,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  },
-  child: Card(
-    margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-    color: fill_color,
-    child: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            deviceName,
-            style: TextStyle(
-              color: fontcolor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            getSensorText(sensorType),
-            style: TextStyle(
-              color: fontcolor,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message +
-                (temperature != null
-                    ? " ${temperature.toStringAsFixed(0)}°C"
-                    : ""),
-            style: TextStyle(
-              color: unnecessary_colors,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                "${formatDate(date)}, $time",
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  ),
-);
-=======
     return GestureDetector(
       onTap: () {
         showModalBottomSheet(
@@ -698,6 +390,5 @@ class _NotifiRouteState extends State<NotifiRoute> {
         ),
       ),
     );
->>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
   }
 }
