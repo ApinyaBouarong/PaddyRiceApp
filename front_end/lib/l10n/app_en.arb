@@ -57,6 +57,7 @@
   "no_devices": "No devices",
   "bluetooth": "Bluetooth",
   "qr_code": "QR Code",
+  "add_device": "Add Device",
   "setting": "Setting",
   "delete": "Delete",
   "temp": "Temp",

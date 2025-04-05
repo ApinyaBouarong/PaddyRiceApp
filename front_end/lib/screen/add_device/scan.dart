@@ -20,6 +20,7 @@ class _ScanRouteState extends State<ScanRoute> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   Barcode? result;
   QRViewController? controller;
+  String? scannedValue;
 
   @override
   void initState() {
@@ -50,6 +51,12 @@ class _ScanRouteState extends State<ScanRoute> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
+        if (result?.code != null) {
+          scannedValue = result!.code!;
+          print('Scanned Value: $scannedValue');
+
+          // Navigator.pop(context, scannedValue); // ส่งค่ากลับไปยังหน้าก่อนหน้า
+        }
       });
     });
   }

@@ -365,9 +365,9 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                 ],
                 onChanged: (value) {
                   final menuItem = value as MenuItem;
-                  if (menuItem.text == localizations.bluetooth) {
+                  if (menuItem.text == localizations.add_device) {
                     context.router.replaceNamed('/addDevice');
-                  } else if (menuItem.text == localizations.qr_code) {
+                  } else if (menuItem.text == localizations.scan) {
                     context.router.replaceNamed('/scan');
                   }
                 },
@@ -655,9 +655,8 @@ abstract class MenuItems {
 
   static void init(BuildContext context) {
     final localizations = S.of(context)!;
-    devices = MenuItem(text: localizations.bluetooth, icon: Icons.bluetooth);
-    scan_qr =
-        MenuItem(text: localizations.qr_code, icon: Icons.qr_code_2_outlined);
+    devices = MenuItem(text: localizations.add_device, icon: Icons.power_sharp);
+    scan_qr = MenuItem(text: localizations.scan, icon: Icons.qr_code_scanner);
 
     firstItems = [devices, scan_qr];
   }
