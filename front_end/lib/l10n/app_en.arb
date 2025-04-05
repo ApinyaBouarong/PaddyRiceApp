@@ -69,15 +69,6 @@
   "no_qr_code": "No QR code available",
 
   "notification": "Notifications",
-<<<<<<< HEAD
-  "temp_back": "Back Tempereture Monitoring Sensor",
-  "temp_exceeds": "Temp exceeds",
-  "temp_front": "Front Tempereture Monitoring Sensor",
-  "humidity": "Humidity monitoring Senser",
-  "monitor_dryness": "monitor for potential dryness",
-  "no_notifications": "No Notification",
-  
-=======
   "temp_back": "Temp, back",
   "temp_exceeds": "Temp exceeds",
   "temp_front": "Temp, front",
@@ -85,7 +76,6 @@
   "monitor_dryness": "monitor for potential dryness",
   "no_notifications": "No Notification",
 
->>>>>>> ee6995936689c0aa31e7fc2f33ef4d56d7ac7896
   "notifications": "Notifications",
   "device_messages": "Device Messages",
   "devices": "Devices",
