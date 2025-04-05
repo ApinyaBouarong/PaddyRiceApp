@@ -1,0 +1,1 @@
+ F:\\Project\\FrontEnd\\.dart_tool\\flutter_gen\\gen_l10n\\app_localizations_en.dart F:\\Project\\FrontEnd\\.dart_tool\\flutter_gen\\gen_l10n\\app_localizations_th.dart F:\\Project\\FrontEnd\\.dart_tool\\flutter_gen\\gen_l10n\\app_localizations.dart:  F:\\Project\\FrontEnd\\l10n.yaml F:\\Project\\FrontEnd\\lib/l10n\\app_en.arb F:\\Project\\FrontEnd\\lib/l10n\\app_th.arb
