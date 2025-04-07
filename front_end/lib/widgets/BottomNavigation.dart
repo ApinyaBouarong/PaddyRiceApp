@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:paddy_rice/constants/color.dart';
 import 'package:paddy_rice/screen/authentication/home.dart';
-import 'package:paddy_rice/screen/profile_management/profile.dart';
+import 'package:paddy_rice/screen/profileManagement/profile.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 @RoutePage()

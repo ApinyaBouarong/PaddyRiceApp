@@ -56,7 +56,7 @@ class _ChangePasswordRouteState extends State<ChangePasswordProfileRoute> {
         'Content-Type': 'application/json',
       },
       body: json.encode({
-        'userId': userId, // ใช้ userId ของผู้ใช้จริง
+        'userId': userId,
         'newPassword': newPassword,
       }),
     );
@@ -148,7 +148,7 @@ class _ChangePasswordRouteState extends State<ChangePasswordProfileRoute> {
         backgroundColor: maincolor,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: iconcolor),
-          onPressed: () => context.router.replaceNamed('/otp_profile'),
+          onPressed: () => context.router.replaceNamed('/profile'),
         ),
         title: Text(S.of(context)!.reset_password, style: appBarFont),
         centerTitle: true,

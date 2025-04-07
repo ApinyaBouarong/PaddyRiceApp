@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const mailjet = require('../config/mailjet');
+const bcrypt = require('bcrypt');
 
 function generateOTP() {
   const otp = Math.floor(1000 + Math.random() * 9000);
@@ -52,6 +53,26 @@ const otpController = {
         return res.status(500).send({ message: 'Database error' });
       }
     },
+
+    changePassword: async (req, res) => {
+      console.log('Received request to change password');
+      const { userid, newPassword } = req.body;
+      // if (!userid || !newPassword) {
+      //     return res.status(400).send({ message: 'User ID and new password are required' });
+      // }
+      try {
+          // const [results] = await pool.query('SELECT email FROM users WHERE user_id = ?', [userid]); // เปลี่ยนจาก email เป็น user_id (สมมติว่าชื่อ Column ใน DB คือ user_id)
+          // if (results.length === 0) {
+          //     return res.status(404).send({ message: 'User not found' });
+          // }
+          const hashedPassword = await bcrypt.hash(newPassword, 10);
+          await pool.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, userid]); // เปลี่ยนจาก email เป็น user_id
+          return res.status(200).send({ message: 'Password updated successfully' });
+      } catch (err) {
+          console.error('Database query error:', err);
+          return res.status(500).send({ message: 'Database error' });
+      }
+  },
   };
   
   module.exports = otpController;

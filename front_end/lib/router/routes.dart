@@ -34,10 +34,10 @@ class AppRouter extends $AppRouter {
             path: '/scan',
             page: ScanRoute.page,
             transitionsBuilder: TransitionsBuilders.fadeIn),
-        // CustomRoute(
-        //     path: '/addDevice',
-        //     page: AddDeviceRoute.page,
-        //     transitionsBuilder: TransitionsBuilders.fadeIn),
+        CustomRoute(
+            path: '/addSerial',
+            page: AddSerialRoute.page,
+            transitionsBuilder: TransitionsBuilders.fadeIn),
         // CustomRoute(
         //     path: '/selectWifi',
         //     page: SelectWifiRoute.page,

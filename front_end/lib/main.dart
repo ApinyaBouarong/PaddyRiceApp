@@ -7,8 +7,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:paddy_rice/services/FCMTokenService.dart';
-import 'package:paddy_rice/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

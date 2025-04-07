@@ -99,26 +99,26 @@ class _ForgotRouteState extends State<ForgotProfileRoute> {
   }
 
   // ฟังก์ชันแสดง dialog เมื่อไม่พบผู้ใช้
-  void _showUserNotFoundDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return ShDialog(
-          title: S.of(context)!.user_not_found,
-          content: S.of(context)!.user_not_found_prompt,
-          parentContext: context,
-          confirmButtonText: S.of(context)!.sign_up,
-          cancelButtonText: S.of(context)!.cancel,
-          onConfirm: () {
-            context.router.replaceNamed('/signup');
-          },
-          onCancel: () {
-            Navigator.of(context).pop();
-          },
-        );
-      },
-    );
-  }
+  // void _showUserNotFoundDialog() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return ShDialog(
+  //         title: S.of(context)!.user_not_found,
+  //         content: S.of(context)!.user_not_found_prompt,
+  //         parentContext: context,
+  //         confirmButtonText: S.of(context)!.sign_up,
+  //         cancelButtonText: S.of(context)!.cancel,
+  //         onConfirm: () {
+  //           context.router.replaceNamed('/signup');
+  //         },
+  //         onCancel: () {
+  //           Navigator.of(context).pop();
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   // ฟังก์ชันเช็คว่าผู้ใช้งานมีอยู่ในฐานข้อมูลหรือไม่
   Future<bool> checkUserExists(String email) async {
@@ -153,9 +153,10 @@ class _ForgotRouteState extends State<ForgotProfileRoute> {
 
       if (userExists) {
         await sendOTP(); // ถ้ามีอีเมล ให้ส่ง OTP
-      } else {
-        _showUserNotFoundDialog(); // ถ้าไม่พบอีเมล แสดงข้อความว่าไม่พบผู้ใช้
       }
+      // else {
+      //   _showUserNotFoundDialog(); // ถ้าไม่พบอีเมล แสดงข้อความว่าไม่พบผู้ใช้
+      // }
     } else {
       setState(() {
         _inputBorderColor = error_color;
