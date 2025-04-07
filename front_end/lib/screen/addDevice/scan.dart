@@ -92,7 +92,7 @@ class _ScanRouteState extends State<ScanRoute> {
         Uri.parse('${ApiConstants.baseUrl}/devices/userID/serialNumber/update'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'userId': userId,
+          'userId': userId, 
           'serialNumber': serialNumber,
         }),
       );
