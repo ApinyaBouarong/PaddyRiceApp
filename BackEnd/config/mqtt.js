@@ -70,12 +70,12 @@ clientMqtt.on('message', async (topic, message) => {
               type: 'back_temp'
             });
           }
-          if (currentHumidity > targetHumidity) {
+          if (currentHumidity < (targetHumidity - 3)) {
             notificationsToSend.push({
               title: `Alert! Humidity Exceeded Target (${deviceId})`,
               body: `Humidity (${currentHumidity}%) exceeds target (${targetHumidity}%)`,
               type: 'humidity'
-            });
+             });
           }
 
           if (userId && notificationsToSend.length > 0) {

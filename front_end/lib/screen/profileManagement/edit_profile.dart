@@ -237,7 +237,7 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
                 image: DecorationImage(
                   image: _imagePath != null
                       ? FileImage(File(_imagePath!))
-                      : const AssetImage('lib/assets/icon/profile.jpg')
+                      : const AssetImage('lib/assets/icon/profile.png')
                           as ImageProvider,
                   fit: BoxFit.cover,
                 ),

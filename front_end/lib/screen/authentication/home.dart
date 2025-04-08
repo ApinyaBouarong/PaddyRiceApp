@@ -366,7 +366,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                 onChanged: (value) {
                   final menuItem = value as MenuItem;
                   if (menuItem.text == localizations.add_device) {
-                    context.router.replaceNamed('/addSerial');
+                    context.router.replaceNamed('/addDevice');
                   } else if (menuItem.text == localizations.scan) {
                     context.router.replaceNamed('/scan');
                   }
@@ -423,7 +423,14 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          DecoratedImage(),
+          Opacity(
+            opacity: 0.5,
+            child: Image.asset(
+              'lib/assets/icon/home.png',
+              height: 94,
+              fit: BoxFit.contain,
+            ),
+          ),
           const Divider(
             height: 1.0,
             color: Color.fromRGBO(215, 215, 215, 1),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +19,12 @@ class NotifiRoute extends StatefulWidget {
 }
 
 class _NotifiRouteState extends State<NotifiRoute> {
+  @override
+  void initState() {
+    super.initState();
+    aboutNotification();
+  }
+
   final Map<String, dynamic> localizationsData = {
     "humidity_Senser": "Humidity monitoring Senser",
     "temp_back_Senser": "Back Tempereture Monitoring Sensor",
@@ -390,5 +398,27 @@ class _NotifiRouteState extends State<NotifiRoute> {
         ),
       ),
     );
+  }
+
+  Future<Null> aboutNotification() async {
+    if (Platform.isAndroid) {
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        if (message.notification != null) {
+          print('Message data: ${message.data}');
+          print(
+              'Message also contained a notification: ${message.notification}');
+        }
+      });
+    } else if (Platform.isIOS) {
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        if (message.notification != null) {
+          print('Message data: ${message.data}');
+          print(
+              'Message also contained a notification: ${message.notification}');
+        }
+      });
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
   }
 }
