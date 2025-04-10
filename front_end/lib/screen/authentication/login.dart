@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:paddy_rice/constants/api.dart';
 import 'package:paddy_rice/constants/color.dart';
+import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/main.dart';
 import 'package:paddy_rice/router/routes.gr.dart';
 import 'package:paddy_rice/widgets/custom_button.dart';
@@ -33,11 +34,46 @@ class _LoginRouteState extends State<LoginRoute> {
   bool _isEmailOrPhoneError = false;
   bool _isPasswordError = false;
   String? _token;
+  bool _rememberMe = false;
+  String? _rememberedEmailOrPhone;
+  bool _isLoggingInAutomatically = false;
 
   @override
   void initState() {
     super.initState();
     _getToken();
+    _checkLoginStatus();
+    _loadRememberMe();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLoginCredentialsAndAutoLogin();
+    });
+  }
+
+  Future<void> _checkLoginCredentialsAndAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool rememberMe = prefs.getBool('rememberMe') ?? false;
+
+    setState(() {
+      _rememberMe = rememberMe;
+    });
+
+    if (rememberMe) {
+      String? savedEmail = prefs.getString('emailOrPhone');
+      String? savedPassword = prefs.getString('password');
+
+      if (savedEmail != null &&
+          savedPassword != null &&
+          savedEmail.isNotEmpty &&
+          savedPassword.isNotEmpty) {
+        setState(() {
+          _emailOrPhoneController.text = savedEmail;
+          _passwordController.text = savedPassword;
+        });
+
+        await _autoLogin();
+      }
+    }
   }
 
   String? _errorMessage;
@@ -50,6 +86,26 @@ class _LoginRouteState extends State<LoginRoute> {
       _locale = isEnglish ? Locale('en') : Locale('th');
       MyApp.setLocale(context, _locale);
     });
+  }
+
+  Future<void> _autoLogin() async {
+    if (_emailOrPhoneController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isLoggingInAutomatically = true;
+    });
+
+    try {
+      await login();
+    } catch (e) {
+      print('Auto login failed: $e');
+      setState(() {
+        _isLoggingInAutomatically = false;
+      });
+    }
   }
 
   Future<Null> _getToken() async {
@@ -71,6 +127,7 @@ class _LoginRouteState extends State<LoginRoute> {
 
       print("idLogin: $idLogin");
       int? idLoginInt = userIdInt;
+      print("idloginInt: $idLoginInt");
 
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/sendToken'),
@@ -110,7 +167,6 @@ class _LoginRouteState extends State<LoginRoute> {
         }),
       )
           .timeout(const Duration(seconds: 10), onTimeout: () {
-        // Handle timeout
         setState(() {
           _errorMessage = S.of(context)!.request_timeout;
         });
@@ -126,6 +182,20 @@ class _LoginRouteState extends State<LoginRoute> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setInt('userId', userId);
+
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setInt('userId', userId);
+
+        if (_rememberMe) {
+          await prefs.setString('emailOrPhone', emailOrPhone);
+          await prefs.setString('password', password);
+          await prefs.setBool('rememberMe', true);
+        } else {
+          await prefs.remove('emailOrPhone');
+          await prefs.remove('password');
+          await prefs.remove('rememberedEmailOrPhone');
+          await prefs.setBool('rememberMe', false);
+        }
 
         context.router.replace(BottomNavigationRoute(page: 0));
       } else {
@@ -271,29 +341,73 @@ class _LoginRouteState extends State<LoginRoute> {
                   },
                 ),
                 SizedBox(height: 8.0),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: TextButton(
-                      onPressed: () => context.router.replaceNamed('/forgot'),
-                      child: Text(
-                        S.of(context)!.forgot_password,
-                        style:
-                            TextStyle(color: unnecessary_colors, fontSize: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Checkbox(
+                      value: _rememberMe,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _rememberMe = value!;
+                        });
+                      },
+                      checkColor: fontcolor,
+                      fillColor: WidgetStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return buttoncolor;
+                        }
+                        return Colors.transparent;
+                      }),
+                      side: BorderSide(
+                          color:
+                              Colors.grey.shade400), // สีเส้นขอบเมื่อไม่เลือก
+                    ),
+                    Text(
+                      S.of(context)!.remember_me,
+                      style: TextStyle(color: fontcolor, fontSize: 12),
+                    ),
+                    SizedBox(
+                      width: 24,
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: TextButton(
+                          onPressed: () =>
+                              context.router.replaceNamed('/forgot'),
+                          child: Text(
+                            S.of(context)!.forgot_password,
+                            style: TextStyle(
+                                color: unnecessary_colors, fontSize: 12),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
                 SizedBox(height: 8.0),
-                CustomButton(
-                  text: S.of(context)!.sign_in,
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await login();
-                      // context.router.replace(BottomNavigationRoute(page: 0));
-                    }
-                  },
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: buttoncolor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    minimumSize: Size(312, 48),
+                  ),
+                  onPressed: _isLoggingInAutomatically
+                      ? null
+                      : () async {
+                          if (_formKey.currentState!.validate()) {
+                            await login();
+                          }
+                        },
+                  child: Text(
+                    S.of(context)!.sign_in,
+                    textAlign: TextAlign.center,
+                    style: buttonFont.copyWith(color: fontcolor, fontSize: 18),
+                  ),
                 ),
                 SizedBox(height: 8.0),
                 Align(
@@ -393,5 +507,52 @@ class _LoginRouteState extends State<LoginRoute> {
         ),
       ),
     );
+  }
+
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool rememberMe = prefs.getBool('rememberMe') ?? false;
+
+    if (rememberMe) {
+      String? savedEmail = prefs.getString('emailOrPhone');
+      String? savedPassword = prefs.getString('password');
+
+      if (savedEmail != null && savedPassword != null) {
+        setState(() {
+          _emailOrPhoneController.text = savedEmail;
+          _passwordController.text = savedPassword;
+          _rememberMe = true;
+        });
+
+        // ไม่ต้องล็อกอินอัตโนมัติที่นี่ เพราะมีการตรวจสอบใน main.dart แล้ว
+        // และถ้าสถานะ login ยังอยู่ จะไม่มาถึงหน้านี้
+      }
+    }
+  }
+
+  Future<void> _loadRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _rememberMe = prefs.getBool('rememberMe') ?? false;
+    });
+
+    if (_rememberMe) {
+      String? savedEmail = prefs.getString('emailOrPhone');
+      String? savedPassword = prefs.getString('password');
+
+      if (savedEmail != null &&
+          savedPassword != null &&
+          savedEmail.isNotEmpty &&
+          savedPassword.isNotEmpty) {
+        setState(() {
+          _emailOrPhoneController.text = savedEmail;
+          _passwordController.text = savedPassword;
+        });
+
+        Future.delayed(Duration(milliseconds: 500), () {
+          _autoLogin();
+        });
+      }
+    }
   }
 }

@@ -186,8 +186,6 @@
   "otp_sent_successfully": "ส่ง otp เรียบร้อยแล้ว",
   "otp_send_failed": "การส่ง OTP ล้มเหลว",
   "failed_update_target": "ไม่สามารถอัปเดตค่าเป้าหมายได้",
-  "updated_Successfully": "อัปเดตสำเร็จแล้ว"
-
-
-
+  "updated_Successfully": "อัปเดตสำเร็จแล้ว",
+  "remember_me": "จำฉันไว้"
 }

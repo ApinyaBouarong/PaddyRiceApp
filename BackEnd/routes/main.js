@@ -7,6 +7,7 @@ const otpController = require('../controllers/otp');
 const admin = require('../config/firebase');
 const clientMqtt = require('../config/mqtt');
 const { mqttTopic } = require('../config/mqtt');
+const pool = require('../config/db');
 
 router.use('/', authRoutes);
 router.use('/', deviceRoutes);
@@ -15,6 +16,8 @@ router.use('/', profileRoutes);
 router.post('/sendToken', async (req, res) => {
   console.log('Received request to send token');
   const { userId, token } = req.body;
+  console.log("userId: ",userId);
+  console.log("token",token);
 
   if (!token || !userId) {
     return res.status(400).send({ message: 'Token and User ID are required' });

@@ -81,8 +81,19 @@ class _ProfileRouteState extends State<ProfileRoute> {
           parentContext: context,
           confirmButtonText: S.of(context)!.log_out,
           cancelButtonText: S.of(context)!.cancel,
-          onConfirm: () {
+          onConfirm: () async {
             Navigator.of(context).pop();
+
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove('emailOrPhone');
+            await prefs.remove('password');
+            await prefs.remove('rememberedEmailOrPhone');
+            await prefs.setBool('rememberMe', false);
+            await prefs.setBool('isLoggedIn', false);
+
+            // **เคลียร์ค่าซ้ำอีกครั้งเพื่อความแน่ใจ**
+            await prefs.remove('emailOrPhone');
+            await prefs.remove('password');
             context.router.replaceNamed('/login');
           },
           onCancel: () {

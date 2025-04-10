@@ -186,5 +186,6 @@
   "otp_sent_successfully": "OTP sent successfully",
   "otp_send_failed": "OTP send failed",
   "failed_update_target": "Failed to update target values",
-  "updated_Successfully": "Updated Successfully"
+  "updated_Successfully": "Updated Successfully",
+  "remember_me": "Remember Me"
 }

@@ -76,6 +76,19 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       print('Error connecting to MQTT: $error');
     });
     _startMqttTimeoutTimer();
+    _loadAndSendToken();
+  }
+
+  Future<void> _loadAndSendToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('fcmToken');
+    int? userId = prefs.getInt('loggedInUserId');
+
+    if (token != null && userId != null) {
+      await _sendTokenToDatabase(token, userId);
+    } else {
+      print('FCM Token or User ID not found in SharedPreferences.');
+    }
   }
 
   void _startMqttTimeoutTimer() {
@@ -166,6 +179,32 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     _mqttService.disconnect();
     _mqttTimeoutTimer.cancel();
     super.dispose();
+  }
+
+  Future<void> _sendTokenToDatabase(String? token, int? userId) async {
+    if (token != null && userId != null) {
+      try {
+        final response = await http.post(
+          Uri.parse(
+              '${ApiConstants.baseUrl}/sendToken'), // Replace with your actual API endpoint
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'userId': userId,
+            'token': token,
+          }),
+        );
+
+        if (response.statusCode == 200) {
+          print('FCM Token sent to database successfully');
+        } else {
+          print('Failed to send FCM Token to database: ${response.body}');
+        }
+      } catch (e) {
+        print('Error sending FCM Token to database: $e');
+      }
+    } else {
+      print('FCM Token or User ID is null, cannot send to database.');
+    }
   }
 
   Future<int?> _getUserId() async {
