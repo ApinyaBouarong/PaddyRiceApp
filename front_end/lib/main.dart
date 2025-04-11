@@ -7,103 +7,41 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:paddy_rice/widgets/notification_state.dart';
+import 'package:provider/provider.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print("Handling a background message: ${message.messageId}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
   runApp(MyApp());
 }
-
-// Fetch both target values and current values for a specific deviceId
-// Future<void> fetchDeviceTargetValuesAndCurrentValues(String deviceId) async {
-//   final targetUrl =
-//       Uri.parse('${ApiConstants.baseUrl}/devices/$deviceId/target-values');
-//   final currentValuesUrl =
-//       Uri.parse('${ApiConstants.baseUrl}/devices/$deviceId/current-values');
-//   try {
-//     // Fetch target values
-//     final targetResponse = await http.get(targetUrl);
-//     if (targetResponse.statusCode == 200) {
-//       final targetData = jsonDecode(targetResponse.body);
-
-//       // Assuming the response contains target_front_temp, target_back_temp, target_humidity
-//       double targetFrontTemp =
-//           (targetData['target_front_temp'] as num?)?.toDouble() ?? 0.0;
-//       double targetBackTemp =
-//           (targetData['target_back_temp'] as num?)?.toDouble() ?? 0.0;
-//       double targetHumidity =
-//           (targetData['target_humidity'] as num?)?.toDouble() ?? 0.0;
-
-//       // Fetch current values
-//       final currentResponse = await http.get(currentValuesUrl);
-//       if (currentResponse.statusCode == 200) {
-//         final currentData = jsonDecode(currentResponse.body);
-
-//         // Assuming the response contains current_front_temp, current_back_temp, current_humidity
-//         double currentFrontTemp =
-//             (currentData['current_front_temp'] as num?)?.toDouble() ?? 0.0;
-//         double currentBackTemp =
-//             (currentData['current_back_temp'] as num?)?.toDouble() ?? 0.0;
-//         double currentHumidity =
-//             (currentData['current_humidity'] as num?)?.toDouble() ?? 0.0;
-
-//         // Check and send notifications based on the target values
-//         await checkAndSendNotification(
-//             currentFrontTemp, targetFrontTemp, 'Front Temperature Exceeded');
-//         await checkAndSendNotification(
-//             currentBackTemp, targetBackTemp, 'Back Temperature Exceeded');
-//         await checkAndSendNotification(
-//             currentHumidity, targetHumidity, 'Humidity Exceeded');
-//       } else {
-//         print('Failed to load current values: ${currentResponse.body}');
-//       }
-//     } else {
-//       print('Failed to load target values: ${targetResponse.body}');
-//     }
-//   } catch (error) {
-//     print('Error fetching values: $error');
-//   }
-// }
-
-// Compare current values with target values and send a notification if exceeded
-// Future<void> checkAndSendNotification(
-//     double currentValue, double setpoint, String title) async {
-//   if (currentValue > setpoint) {
-//     final deviceId = "1";
-//     final url =
-//         Uri.parse('${ApiConstants.baseUrl}/devices/$deviceId/notifications');
-
-//     final data = {
-//       'title': title,
-//       'description': 'Value exceeded: $currentValue',
-//       'setpoint': setpoint,
-//       'exceededValue': currentValue,
-//     };
-
-//     try {
-//       final response = await http.post(
-//         url,
-//         headers: {"Content-Type": "application/json"},
-//         body: jsonEncode(data),
-//       );
-
-//       if (response.statusCode == 200) {
-//         print('Notification sent successfully');
-//       } else {
-//         print('Failed to send notification: ${response.body}');
-//       }
-//     } catch (error) {
-//       print('Error sending notification: $error');
-//     }
-//   }
-// }
 
 class MyApp extends StatefulWidget {
   final bool isLoggedIn;
 
   MyApp({super.key, this.isLoggedIn = false});
-  // ignore: library_private_types_in_public_api
   static _MyAppState of(BuildContext context) =>
       context.findAncestorStateOfType<_MyAppState>()!;
 
@@ -118,7 +56,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _appRouter = AppRouter();
-
   Locale _locale = const Locale('en', '');
 
   setLocale(Locale locale) async {
@@ -138,6 +75,42 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _locale = locale;
       });
+    });
+
+    _initFCM();
+  }
+
+  void _initFCM() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              'high_importance_channel',
+              'High Importance Notifications',
+              importance: Importance.max,
+              priority: Priority.high,
+              icon: '@mipmap/launcher_icon',
+            ),
+          ),
+        );
+        Provider.of<NotificationState>(context, listen: false)
+            .showNotificationDot();
+      }
     });
   }
 

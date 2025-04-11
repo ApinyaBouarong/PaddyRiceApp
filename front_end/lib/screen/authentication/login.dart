@@ -37,44 +37,60 @@ class _LoginRouteState extends State<LoginRoute> {
   bool _rememberMe = false;
   String? _rememberedEmailOrPhone;
   bool _isLoggingInAutomatically = false;
+  bool _isFirstLoad = true;
 
   @override
   void initState() {
     super.initState();
     _getToken();
-    _checkLoginStatus();
-    _loadRememberMe();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkLoginCredentialsAndAutoLogin();
-    });
+    _loadRememberedCredentialsAndAttemptAutoLogin();
   }
 
-  Future<void> _checkLoginCredentialsAndAutoLogin() async {
+  Future<void> _loadRememberedCredentialsAndAttemptAutoLogin() async {
+    if (!_isFirstLoad) return;
+
     final prefs = await SharedPreferences.getInstance();
-    bool rememberMe = prefs.getBool('rememberMe') ?? false;
+    bool remembered = prefs.getBool('rememberMe') ?? false;
+    String? savedEmail = prefs.getString('emailOrPhone');
+    String? savedPassword = prefs.getString('password');
 
     setState(() {
-      _rememberMe = rememberMe;
+      _rememberMe = remembered;
     });
 
-    if (rememberMe) {
-      String? savedEmail = prefs.getString('emailOrPhone');
-      String? savedPassword = prefs.getString('password');
-
-      if (savedEmail != null &&
-          savedPassword != null &&
-          savedEmail.isNotEmpty &&
-          savedPassword.isNotEmpty) {
-        setState(() {
-          _emailOrPhoneController.text = savedEmail;
-          _passwordController.text = savedPassword;
-        });
-
-        await _autoLogin();
-      }
+    if (remembered && savedEmail != null && savedPassword != null) {
+      _emailOrPhoneController.text = savedEmail;
+      _passwordController.text = savedPassword;
+      _autoLogin(); // Attempt auto login immediately after loading credentials
     }
+    _isFirstLoad = false;
   }
+
+  // Future<void> _checkLoginCredentialsAndAutoLogin() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   bool rememberMe = prefs.getBool('rememberMe') ?? false;
+
+  //   setState(() {
+  //     _rememberMe = rememberMe;
+  //   });
+
+  //   if (rememberMe) {
+  //     String? savedEmail = prefs.getString('emailOrPhone');
+  //     String? savedPassword = prefs.getString('password');
+
+  //     if (savedEmail != null &&
+  //         savedPassword != null &&
+  //         savedEmail.isNotEmpty &&
+  //         savedPassword.isNotEmpty) {
+  //       setState(() {
+  //         _emailOrPhoneController.text = savedEmail;
+  //         _passwordController.text = savedPassword;
+  //       });
+
+  //       await _autoLogin();
+  //     }
+  //   }
+  // }
 
   String? _errorMessage;
   Locale _locale = Locale('en');
@@ -88,6 +104,25 @@ class _LoginRouteState extends State<LoginRoute> {
     });
   }
 
+  // Future<void> _autoLogin() async {
+  //   if (_emailOrPhoneController.text.isEmpty ||
+  //       _passwordController.text.isEmpty) {
+  //     return;
+  //   }
+
+  //   setState(() {
+  //     _isLoggingInAutomatically = true;
+  //   });
+
+  //   try {
+  //     await login();
+  //   } catch (e) {
+  //     print('Auto login failed: $e');
+  //     setState(() {
+  //       _isLoggingInAutomatically = false;
+  //     });
+  //   }
+  // }
   Future<void> _autoLogin() async {
     if (_emailOrPhoneController.text.isEmpty ||
         _passwordController.text.isEmpty) {
@@ -155,7 +190,7 @@ class _LoginRouteState extends State<LoginRoute> {
   Future<void> login() async {
     String emailOrPhone = _emailOrPhoneController.text;
     String password = _passwordController.text;
-
+    print('Start login APi');
     try {
       final response = await http
           .post(
@@ -359,9 +394,7 @@ class _LoginRouteState extends State<LoginRoute> {
                         }
                         return Colors.transparent;
                       }),
-                      side: BorderSide(
-                          color:
-                              Colors.grey.shade400), // สีเส้นขอบเมื่อไม่เลือก
+                      side: BorderSide(color: Colors.grey.shade400),
                     ),
                     Text(
                       S.of(context)!.remember_me,
@@ -399,8 +432,12 @@ class _LoginRouteState extends State<LoginRoute> {
                   onPressed: _isLoggingInAutomatically
                       ? null
                       : () async {
+                          print('Login button pressed');
                           if (_formKey.currentState!.validate()) {
+                            print("login");
                             await login();
+                          } else {
+                            print('Validation failed');
                           }
                         },
                   child: Text(
@@ -509,50 +546,50 @@ class _LoginRouteState extends State<LoginRoute> {
     );
   }
 
-  Future<void> _checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool rememberMe = prefs.getBool('rememberMe') ?? false;
+  // Future<void> _checkLoginStatus() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   bool rememberMe = prefs.getBool('rememberMe') ?? false;
 
-    if (rememberMe) {
-      String? savedEmail = prefs.getString('emailOrPhone');
-      String? savedPassword = prefs.getString('password');
+  //   if (rememberMe) {
+  //     String? savedEmail = prefs.getString('emailOrPhone');
+  //     String? savedPassword = prefs.getString('password');
 
-      if (savedEmail != null && savedPassword != null) {
-        setState(() {
-          _emailOrPhoneController.text = savedEmail;
-          _passwordController.text = savedPassword;
-          _rememberMe = true;
-        });
+  //     if (savedEmail != null && savedPassword != null) {
+  //       setState(() {
+  //         _emailOrPhoneController.text = savedEmail;
+  //         _passwordController.text = savedPassword;
+  //         _rememberMe = true;
+  //       });
 
-        // ไม่ต้องล็อกอินอัตโนมัติที่นี่ เพราะมีการตรวจสอบใน main.dart แล้ว
-        // และถ้าสถานะ login ยังอยู่ จะไม่มาถึงหน้านี้
-      }
-    }
-  }
+  //       // ไม่ต้องล็อกอินอัตโนมัติที่นี่ เพราะมีการตรวจสอบใน main.dart แล้ว
+  //       // และถ้าสถานะ login ยังอยู่ จะไม่มาถึงหน้านี้
+  //     }
+  //   }
+  // }
 
-  Future<void> _loadRememberMe() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _rememberMe = prefs.getBool('rememberMe') ?? false;
-    });
+  // Future<void> _loadRememberMe() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     _rememberMe = prefs.getBool('rememberMe') ?? false;
+  //   });
 
-    if (_rememberMe) {
-      String? savedEmail = prefs.getString('emailOrPhone');
-      String? savedPassword = prefs.getString('password');
+  //   if (_rememberMe) {
+  //     String? savedEmail = prefs.getString('emailOrPhone');
+  //     String? savedPassword = prefs.getString('password');
 
-      if (savedEmail != null &&
-          savedPassword != null &&
-          savedEmail.isNotEmpty &&
-          savedPassword.isNotEmpty) {
-        setState(() {
-          _emailOrPhoneController.text = savedEmail;
-          _passwordController.text = savedPassword;
-        });
+  //     if (savedEmail != null &&
+  //         savedPassword != null &&
+  //         savedEmail.isNotEmpty &&
+  //         savedPassword.isNotEmpty) {
+  //       setState(() {
+  //         _emailOrPhoneController.text = savedEmail;
+  //         _passwordController.text = savedPassword;
+  //       });
 
-        Future.delayed(Duration(milliseconds: 500), () {
-          _autoLogin();
-        });
-      }
-    }
-  }
+  //       Future.delayed(Duration(milliseconds: 500), () {
+  //         _autoLogin();
+  //       });
+  //     }
+  //   }
+  // }
 }

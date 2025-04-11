@@ -7,6 +7,7 @@ import 'package:paddy_rice/constants/api.dart';
 import 'package:paddy_rice/constants/color.dart';
 import 'package:paddy_rice/constants/font_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:paddy_rice/router/routes.gr.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:paddy_rice/widgets/custom_button.dart'; // สมมติว่าคุณมี CustomButton
@@ -78,9 +79,28 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
         print('User assigned to device successfully!');
         if (json.decode(response.body)['status'] == 'success') {
           _serialNumberController.clear();
-          context.router.replaceNamed('/home');
+          // แสดง OkDialog เมื่อสำเร็จ
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text("สำเร็จ"),
+                content: Text("เพิ่ม Serial Number สำเร็จ"),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text("ตกลง"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      context.router.replace(BottomNavigationRoute(page: 0));
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          _showSuccessSnackBar('Device assigned to user successfully!');
         }
-        _showSuccessSnackBar('Device assigned to user successfully!');
       } else {
         _showErrorSnackBar(
             'Failed to assign user to device. Status: ${response.statusCode}');
@@ -184,6 +204,8 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   TextFieldCustom(
                     controller: _serialNumberController,

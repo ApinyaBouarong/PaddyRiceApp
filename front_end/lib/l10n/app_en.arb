@@ -187,5 +187,8 @@
   "otp_send_failed": "OTP send failed",
   "failed_update_target": "Failed to update target values",
   "updated_Successfully": "Updated Successfully",
-  "remember_me": "Remember Me"
+  "remember_me": "Remember Me",
+  "device_deleted_successfully": "Device Delete Successfully",
+  "network_error": "Network Error",
+  "delete_confirmation_serial": "Is the device facility \"{deviceName}\" required?"
 }

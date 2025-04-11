@@ -21,7 +21,9 @@ const profileController = {
   },
 
   getProfileByUserId: async (req, res) => {
-    const userId = req.params.userId;
+    const userIdString  = req.params.userId;
+    const userId = parseInt(userIdString);
+    console.log('Get profile userid:', userId)
     try {
       const [rows] = await pool.query(
         'SELECT name, surname, email, phone_number FROM users WHERE user_id = ?',

@@ -8,6 +8,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/screen/device/deviceState.dart';
 import 'package:paddy_rice/services/FCMTokenService.dart';
+import 'package:paddy_rice/widgets/OkDialog.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:paddy_rice/widgets/model.dart';
 import 'package:paddy_rice/widgets/ChoiceDialog.dart';
@@ -76,19 +77,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       print('Error connecting to MQTT: $error');
     });
     _startMqttTimeoutTimer();
-    _loadAndSendToken();
-  }
-
-  Future<void> _loadAndSendToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('fcmToken');
-    int? userId = prefs.getInt('loggedInUserId');
-
-    if (token != null && userId != null) {
-      await _sendTokenToDatabase(token, userId);
-    } else {
-      print('FCM Token or User ID not found in SharedPreferences.');
-    }
   }
 
   void _startMqttTimeoutTimer() {
@@ -179,32 +167,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     _mqttService.disconnect();
     _mqttTimeoutTimer.cancel();
     super.dispose();
-  }
-
-  Future<void> _sendTokenToDatabase(String? token, int? userId) async {
-    if (token != null && userId != null) {
-      try {
-        final response = await http.post(
-          Uri.parse(
-              '${ApiConstants.baseUrl}/sendToken'), // Replace with your actual API endpoint
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'userId': userId,
-            'token': token,
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          print('FCM Token sent to database successfully');
-        } else {
-          print('Failed to send FCM Token to database: ${response.body}');
-        }
-      } catch (e) {
-        print('Error sending FCM Token to database: $e');
-      }
-    } else {
-      print('FCM Token or User ID is null, cannot send to database.');
-    }
   }
 
   Future<int?> _getUserId() async {
@@ -331,23 +293,121 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   }
 
   // Show delete confirmation dialog
-  void _showDeleteConfirmationDialog(int index) {
+
+  Future<void> _deleteDevice(String deviceId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final int? userId = prefs.getInt('userId');
+
+    if (userId == null) {
+      print('User ID not found, cannot update device.');
+      return;
+    }
+    print('start delete device process');
+    print('Device ID: $deviceId');
+    print('User ID: $userId');
+    final urlGetSerial = '${ApiConstants.baseUrl}/device/$deviceId/$userId';
+
+    try {
+      final responseGetSerial = await http.get(
+        Uri.parse(urlGetSerial),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (responseGetSerial.statusCode == 200) {
+        print('Get Serial Number Response: ${responseGetSerial.body}');
+
+        try {
+          final Map<String, dynamic> responseData =
+              jsonDecode(responseGetSerial.body);
+          final String? serialNumber = responseData['serialNumber'];
+          if (serialNumber != null) {
+            print('Serial Number from API: $serialNumber');
+            final urlUpdate =
+                '${ApiConstants.baseUrl}/devices/userID/serialNumber/update';
+            final responseUpdate = await http.put(
+              Uri.parse(urlUpdate),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'userId': null,
+                'serialNumber': serialNumber,
+              }),
+            );
+            print(
+                'Update Response: ${responseUpdate.statusCode} - ${responseUpdate.body}');
+            if (responseUpdate.statusCode == 200) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return OkDialog(
+                    title: 'สำเร็จ',
+                    content: 'ยกเลิกการเชื่อมต่ออุปกรณ์สำเร็จ',
+                    parentContext: context,
+                    confirmButtonText: 'ตกลง',
+                    cancelButtonText: '',
+                    onConfirm: () {
+                      Navigator.of(context).pop();
+                      _initializeDevices();
+                    },
+                  );
+                },
+              );
+            } else {
+              print(
+                  'Failed to update device user: ${responseUpdate.statusCode} - ${responseUpdate.body}');
+            }
+          } else {
+            print('Serial Number not found in the get response.');
+          }
+        } catch (e) {
+          print('Error decoding JSON for serial number: $e');
+        }
+      } else if (responseGetSerial.statusCode == 404) {
+        print("Device not found to get serial number.");
+      } else {
+        print(
+            'Failed to get serial number: ${responseGetSerial.statusCode} - ${responseGetSerial.body}');
+      }
+    } catch (e) {
+      print('Error during get serial number request: $e');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return OkDialog(
+            title: 'ข้อผิดพลาด',
+            content: 'เกิดข้อผิดพลาดในการเชื่อมต่อ: $e',
+            parentContext: context,
+            confirmButtonText: 'ตกลง',
+            cancelButtonText: '',
+            onConfirm: () {
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
+    }
+  }
+
+  void _showDeleteConfirmationDialog(Device device) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return ShDialog(
-          title: S.of(context)!.delete,
-          content: S.of(context)!.delete_confirmation,
-          parentContext: context,
-          confirmButtonText: S.of(context)!.delete,
-          cancelButtonText: S.of(context)!.cancel,
-          onConfirm: () {
-            removeDevice(index);
-            Navigator.of(context).pop();
-          },
-          onCancel: () {
-            Navigator.of(context).pop();
-          },
+        return AlertDialog(
+          title: const Text('ยืนยันการยกเลิก'),
+          content: Text(
+              'คุณต้องการยกเลิกการเชื่อมต่ออุปกรณ์ "${device.name}" (ID: ${device.id}) หรือไม่?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('ยกเลิก'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteDevice(device.id);
+                Navigator.of(context).pop();
+              },
+              child: const Text('ยืนยัน'),
+            ),
+          ],
         );
       },
     );
@@ -529,13 +589,13 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                       //   foregroundColor: fill_color,
                       //   icon: Icons.settings,
                       // ),
-                      // SlidableAction(
-                      //   onPressed: (context) =>
-                      //       _showDeleteConfirmationDialog(),
-                      //   backgroundColor: const Color.fromRGBO(237, 76, 47, 1),
-                      //   foregroundColor: fill_color,
-                      //   icon: Icons.delete,
-                      // ),
+                      SlidableAction(
+                        onPressed: (context) =>
+                            _showDeleteConfirmationDialog(device),
+                        backgroundColor: const Color.fromRGBO(237, 76, 47, 1),
+                        foregroundColor: fill_color,
+                        icon: Icons.delete,
+                      ),
                     ],
                   ),
                   child: Container(

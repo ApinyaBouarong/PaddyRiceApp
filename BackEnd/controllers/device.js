@@ -113,6 +113,30 @@ const deviceController = {
     }
   },
 
+  getSerialNumberById: async (req, res) =>{
+    console.log('Start Get Serial Number');
+    const userId = parseInt(req.params.userID); 
+    const device_id = parseInt(req.params.device);
+    console.log('UserID:',userId);
+    console.log('Device ID',device_id);
+
+    try{
+      const [result]= await pool.query(
+        'SELECT serial_number FROM devices WHERE  user_Id = ? AND device_id = ?',
+        [userId,device_id]
+      );
+      if (result.length > 0) {
+        return res.status(200).json({ serialNumber: result[0].serial_number });
+      } else {
+        return res.status(404).json({ message: 'Device not found for the given User ID and Device ID' });
+      }
+        
+    }catch (error){
+      console.error('Error getting serial number:', error);
+      return res.status(500).json({ message: 'Database error' });
+    }
+    
+  },
  
 };
 

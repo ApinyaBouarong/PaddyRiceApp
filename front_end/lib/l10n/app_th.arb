@@ -187,5 +187,8 @@
   "otp_send_failed": "การส่ง OTP ล้มเหลว",
   "failed_update_target": "ไม่สามารถอัปเดตค่าเป้าหมายได้",
   "updated_Successfully": "อัปเดตสำเร็จแล้ว",
-  "remember_me": "จำฉันไว้"
+  "remember_me": "จำฉันไว้",
+  "device_deleted_successfully": "ลบอุปกรณ์สำเร็จ",
+  "network_error": "ข้อผิดพลาดของเครือข่าย",
+  "delete_confirmation_serial": "คุณต้องการลบอุปกรณ์ \"{deviceName}\" ใช่หรือไม่?"
 }

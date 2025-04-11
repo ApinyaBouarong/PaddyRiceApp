@@ -53,11 +53,13 @@ class _ProfileRouteState extends State<ProfileRoute> {
   }
 
   Future<UserProfile> _fetchUserProfile() async {
+    print('----------start _fetchUserProfile----------');
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId');
     if (userId == null) {
       throw Exception('No user ID found');
     }
+    print('User id: $userId');
 
     final response = await http.get(
       Uri.parse('${ApiConstants.baseUrl}/profile/$userId'),
@@ -67,6 +69,7 @@ class _ProfileRouteState extends State<ProfileRoute> {
       return UserProfile.fromJson(jsonDecode(response.body));
     } else {
       print('Error: ${response.statusCode} - ${response.reasonPhrase}');
+      print('Response Body: ${response.body}');
       throw Exception('Failed to load profile');
     }
   }

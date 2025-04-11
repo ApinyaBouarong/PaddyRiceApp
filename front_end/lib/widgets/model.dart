@@ -11,18 +11,19 @@ class Device {
   double targetFrontTemp;
   double targetBackTemp;
   double targetHumidity;
+  final String serialNumber;
 
-  Device({
-    required this.name,
-    required this.id,
-    required this.status,
-    this.frontTemp = 0.0,
-    this.backTemp = 0.0,
-    this.humidity = 0.0,
-    this.targetFrontTemp = 0.0,
-    this.targetBackTemp = 0.0,
-    this.targetHumidity = 0.0,
-  });
+  Device(
+      {required this.name,
+      required this.id,
+      required this.status,
+      this.frontTemp = 0.0,
+      this.backTemp = 0.0,
+      this.humidity = 0.0,
+      this.targetFrontTemp = 0.0,
+      this.targetBackTemp = 0.0,
+      this.targetHumidity = 0.0,
+      required this.serialNumber});
 
   factory Device.fromJson(Map<String, dynamic> json) {
     return Device(
@@ -46,6 +47,7 @@ class Device {
       targetHumidity: json['target_humidity'] != null
           ? (json['target_humidity'] as num).toDouble()
           : 0.0,
+      serialNumber: json['serial_number'] ?? '',
     );
   }
 }
