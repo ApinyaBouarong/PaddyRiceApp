@@ -12,6 +12,7 @@ import 'package:paddy_rice/widgets/OkDialog.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:paddy_rice/widgets/model.dart';
 import 'package:paddy_rice/widgets/ChoiceDialog.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:paddy_rice/widgets/web_socket_service.dart';
 import 'dart:convert';
@@ -19,6 +20,8 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:paddy_rice/widgets/mqtt_client.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../../widgets/notification_state.dart';
 
 @RoutePage()
 class HomeRoute extends StatefulWidget {
@@ -42,7 +45,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   late Timer _mqttTimeoutTimer;
   final int _mqttTimeoutDuration = 10;
   bool isDataReceived = false;
-  bool shouldShowNotification = false;
+  // bool shouldShowNotification = false;
   Map<String, DeviceData> deviceDataMap = {};
 
   @override
@@ -238,7 +241,8 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       if (response.statusCode == 200) {
         print('Device updated successfully');
         setState(() {
-          shouldShowNotification = true;
+          Provider.of<NotificationState>(context, listen: false)
+              .showNotificationDot();
         });
       } else {
         print('Failed to update device: ${response.statusCode}');
@@ -418,23 +422,31 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     final localizations = S.of(context);
     MenuItems.init(context);
 
+    final notificationState = Provider.of<NotificationState>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: maincolor,
         title: Text(localizations!.title, style: appBarFont),
         actions: [
           IconButton(
-            onPressed: () => context.router.replaceNamed('/notifi'),
+            onPressed: () {
+              Provider.of<NotificationState>(context, listen: false)
+                  .hideNotificationDot();
+              context.router.replaceNamed('/notifi');
+            },
             icon: Stack(
               children: <Widget>[
                 Icon(
                   Icons.notifications_outlined,
                   size: 24,
-                  color: shouldShowNotification
+                  color: Provider.of<NotificationState>(context)
+                          .shouldShowNotification
                       ? Colors.red
-                      : iconcolor, // เปลี่ยนสีเป็นแดงเมื่อมีการแจ้งเตือน
+                      : iconcolor,
                 ),
-                if (shouldShowNotification)
+                if (Provider.of<NotificationState>(context)
+                    .shouldShowNotification)
                   Positioned(
                     right: 0,
                     bottom: 0,

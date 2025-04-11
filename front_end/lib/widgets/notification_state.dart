@@ -9,7 +9,7 @@ class NotificationState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearNotificationDot() {
+  void hideNotificationDot() {
     _shouldShowNotification = false;
     notifyListeners();
   }

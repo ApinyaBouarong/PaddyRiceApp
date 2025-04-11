@@ -116,14 +116,17 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: "Flutter Workshop",
-      theme: ThemeData(fontFamily: 'opensans'),
-      debugShowCheckedModeBanner: false,
-      locale: _locale,
-      routerConfig: _appRouter.config(),
-      localizationsDelegates: S.localizationsDelegates,
-      supportedLocales: S.supportedLocales,
+    return ChangeNotifierProvider(
+      create: (context) => NotificationState(),
+      child: MaterialApp.router(
+        title: "Flutter Workshop",
+        theme: ThemeData(fontFamily: 'opensans'),
+        debugShowCheckedModeBanner: false,
+        locale: _locale,
+        routerConfig: _appRouter.config(),
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+      ),
     );
   }
 }

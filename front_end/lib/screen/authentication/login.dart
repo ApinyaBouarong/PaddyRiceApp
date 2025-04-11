@@ -38,12 +38,21 @@ class _LoginRouteState extends State<LoginRoute> {
   String? _rememberedEmailOrPhone;
   bool _isLoggingInAutomatically = false;
   bool _isFirstLoad = true;
+  String? _firebaseToken;
+  bool _isMounted = false;
 
   @override
   void initState() {
     super.initState();
     _getToken();
+    _isMounted = true;
     _loadRememberedCredentialsAndAttemptAutoLogin();
+  }
+
+  @override
+  void dispose() {
+    _isMounted = false;
+    super.dispose();
   }
 
   Future<void> _loadRememberedCredentialsAndAttemptAutoLogin() async {
@@ -96,33 +105,50 @@ class _LoginRouteState extends State<LoginRoute> {
   Locale _locale = Locale('en');
   bool isEnglish = true;
 
-  void _changeLanguage() {
+  void _changeLanguage() async {
     setState(() {
       isEnglish = !isEnglish;
       _locale = isEnglish ? Locale('en') : Locale('th');
       MyApp.setLocale(context, _locale);
     });
+
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+
+    if (userId != null) {
+      print('--------Update Language On Server----------');
+      print('userid $userId');
+      print('language: ${_locale.languageCode}');
+      await _updateUserLanguageOnServer(userId, _locale.languageCode);
+    } else {
+      print('Warning: UserId not found, cannot update language on server.');
+    }
   }
 
-  // Future<void> _autoLogin() async {
-  //   if (_emailOrPhoneController.text.isEmpty ||
-  //       _passwordController.text.isEmpty) {
-  //     return;
-  //   }
+  Future<void> _updateUserLanguageOnServer(
+      int userId, String languageCode) async {
+    try {
+      print("----------API update language----------");
+      print('userID: $userId');
+      print('language: $languageCode');
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/updateUserLanguage'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'userId': userId, 'language': languageCode}),
+      );
 
-  //   setState(() {
-  //     _isLoggingInAutomatically = true;
-  //   });
+      print("----------API update language----------");
+      if (response.statusCode == 200) {
+        print('Language updated on server: $languageCode');
+      } else {
+        print('Failed to update language on server: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error sending language to server: $e');
+    }
+  }
 
-  //   try {
-  //     await login();
-  //   } catch (e) {
-  //     print('Auto login failed: $e');
-  //     setState(() {
-  //       _isLoggingInAutomatically = false;
-  //     });
-  //   }
-  // }
   Future<void> _autoLogin() async {
     if (_emailOrPhoneController.text.isEmpty ||
         _passwordController.text.isEmpty) {
@@ -144,17 +170,15 @@ class _LoginRouteState extends State<LoginRoute> {
   }
 
   Future<Null> _getToken() async {
+    print('<-----Firebase Token Request Started----->');
     try {
       String? token = await FirebaseMessaging.instance.getToken();
-      print('<-----Firebase Token Request Started----->');
 
-      if (token == null) {
-        print('Token is null');
-      } else {
+      if (_isMounted) {
         setState(() {
-          _token = token;
+          _firebaseToken = token;
+          print('Firebase Token: $_firebaseToken');
         });
-        print('Token successfully retrieved: $token');
       }
       SharedPreferences preferences = await SharedPreferences.getInstance();
       int? userIdInt = preferences.getInt('userId');
@@ -171,7 +195,7 @@ class _LoginRouteState extends State<LoginRoute> {
         },
         body: jsonEncode({
           'userId': idLoginInt,
-          'token': token,
+          'token': _firebaseToken,
         }),
       );
       print('API Response Status Code: ${response.statusCode}');
@@ -376,49 +400,53 @@ class _LoginRouteState extends State<LoginRoute> {
                   },
                 ),
                 SizedBox(height: 8.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Checkbox(
-                      value: _rememberMe,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _rememberMe = value!;
-                        });
-                      },
-                      checkColor: fontcolor,
-                      fillColor: WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) {
-                        if (states.contains(WidgetState.selected)) {
-                          return buttoncolor;
-                        }
-                        return Colors.transparent;
-                      }),
-                      side: BorderSide(color: Colors.grey.shade400),
-                    ),
-                    Text(
-                      S.of(context)!.remember_me,
-                      style: TextStyle(color: fontcolor, fontSize: 12),
-                    ),
-                    SizedBox(
-                      width: 24,
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24),
+                SizedBox(
+                  width: 312,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start, // เปลี่ยนตรงนี้
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _rememberMe = value!;
+                              });
+                            },
+                            checkColor: fontcolor,
+                            fillColor: WidgetStateProperty.resolveWith<Color>(
+                              (Set<WidgetState> states) {
+                                if (states.contains(WidgetState.selected)) {
+                                  return buttoncolor;
+                                }
+                                return Colors.transparent;
+                              },
+                            ),
+                            side: BorderSide(color: Colors.grey.shade400),
+                          ),
+                          Text(
+                            S.of(context)!.remember_me,
+                            style: TextStyle(color: fontcolor, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      Spacer(),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 0),
                         child: TextButton(
                           onPressed: () =>
                               context.router.replaceNamed('/forgot'),
                           child: Text(
                             S.of(context)!.forgot_password,
                             style: TextStyle(
-                                color: unnecessary_colors, fontSize: 12),
+                                color: unnecessary_colors, fontSize: 11),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 SizedBox(height: 8.0),
                 ElevatedButton(

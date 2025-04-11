@@ -58,53 +58,91 @@ clientMqtt.on('message', async (topic, message) => {
 
           if (currentFrontTemp > targetFrontTemp) {
             notificationsToSend.push({
-              title: `Alert! Front Temp Exceeded Target (${deviceId})`,
-              body: `Front Temperature (${currentFrontTemp}°C) exceeds target (${targetFrontTemp}°C)`,
+              title: {
+                en: `Alert! Front Temp Exceeded Target (${deviceId})`,
+                th: `แจ้งเตือน! อุณหภูมิด้านหน้าเกินเป้าหมาย (${deviceId})`
+              },
+              body: {
+                en: `Front Temperature (${currentFrontTemp}°C) exceeds target (${targetFrontTemp}°C)`,
+                th: `อุณหภูมิด้านหน้า (${currentFrontTemp}°C) สูงกว่าเป้าหมาย (${targetFrontTemp}°C)`
+              },
               type: 'front_temp'
             });
           }
           if (currentBackTemp > targetBackTemp) {
             notificationsToSend.push({
-              title: `Alert! Back Temp Exceeded Target (${deviceId})`,
-              body: `Back Temperature (${currentBackTemp}°C) exceeds target (${targetBackTemp}°C)`,
+              title: {
+                en: `Alert! Back Temp Exceeded Target (${deviceId})`,
+                th: `แจ้งเตือน! อุณหภูมิด้านหลังเกินเป้าหมาย (${deviceId})`
+              },
+              body: {
+                en: `Back Temperature (${currentBackTemp}°C) exceeds target (${targetBackTemp}°C)`,
+                th: `อุณหภูมิด้านหลัง (${currentBackTemp}°C) สูงกว่าเป้าหมาย (${targetBackTemp}°C)`
+              },
               type: 'back_temp'
             });
           }
           if (currentHumidity < (targetHumidity - 3)) {
             notificationsToSend.push({
-              title: `Alert! Humidity Exceeded Target (${deviceId})`,
-              body: `Humidity (${currentHumidity}%) exceeds target (${targetHumidity}%)`,
+              title: {
+                en: `Alert! Humidity Below Target (${deviceId})`,
+                th: `แจ้งเตือน! ความชื้นต่ำกว่าเป้าหมาย (${deviceId})`
+              },
+              body: {
+                en: `Humidity (${currentHumidity}%) is below target (${targetHumidity}%)`,
+                th: `ความชื้น (${currentHumidity}%) ต่ำกว่าเป้าหมาย (${targetHumidity}%)`
+              },
               type: 'humidity'
-             });
+            });
           }
 
           if (userId && notificationsToSend.length > 0) {
-            const [users] = await pool.query('SELECT token FROM users WHERE user_id = ?', [userId]);
-            console.log('token:', users);
-            if (users.length > 0 && users[0].token) {
-              const fcmToken = users[0].token;
+            try {
+              const [users] = await pool.query('SELECT token, language FROM users WHERE user_id = ?', [userId]);
+              console.log('User Data with Token and Language:', users);
 
-              for (const notification of notificationsToSend) {
-                const fcmPayload = {
-                  notification: { title: notification.title, body: notification.body },
-                  data: { deviceId: String(deviceId), type: notification.type },
-                  token: fcmToken,
-                };
-                try {
-                  const response = await admin.messaging().send(fcmPayload);
-                  console.log('FCM notification sent:', response);
-                } catch (error) {
-                  console.error('Error sending FCM:', error);
-                }
+              if (users.length > 0 && users[0].token) {
+                const fcmToken = users[0].token;
+                const preferredLanguage = users[0].language || 'en'; 
 
-                if (wss) {
-                  wss.clients.forEach(client => {
-                    if (client.userId === userId) {
-                      client.send(JSON.stringify({ type: 'sensor_alert', deviceId: deviceId, title: notification.title, body: notification.body, alertType: notification.type }));
-                    }
-                  });
+                for (const notification of notificationsToSend) {
+                  const fcmPayload = {
+                    notification: {
+                      title: notification.title[preferredLanguage] || notification.title.en || 'Alert!',
+                      body: notification.body[preferredLanguage] || notification.body.en || 'Sensor Alert!',
+                    },
+                    data: {
+                      deviceId: String(deviceId),
+                      type: notification.type,
+                      loc_title: JSON.stringify(notification.title),
+                      loc_body: JSON.stringify(notification.body),
+                    },
+                    token: fcmToken,
+                  };
+                  try {
+                    const response = await admin.messaging().send(fcmPayload);
+                    console.log('FCM notification sent:', response);
+                  } catch (error) {
+                    console.error('Error sending FCM:', error);
+                  }
+
+                  if (wss) {
+                    wss.clients.forEach(client => {
+                      if (client.userId === userId) {
+                        client.send(JSON.stringify({
+                          type: 'sensor_alert',
+                          deviceId: deviceId,
+                          title: notification.title[preferredLanguage] || notification.title.en || 'Alert!',
+                          body: notification.body[preferredLanguage] || notification.body.en || 'Sensor Alert!',
+                          alertType: notification.type
+                        }));
+                      }
+                    });
+                  }
                 }
               }
+            } catch (error) {
+              console.error('Error querying user data:', error);
             }
           }
         } else {

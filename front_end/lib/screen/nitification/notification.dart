@@ -32,7 +32,7 @@ class _NotifiRouteState extends State<NotifiRoute> {
   };
   final Map<String, dynamic> jsonData = {
     'deviceName': "Device 2",
-    'sensorType': "humidity_senser", // ใช้ key จาก localizationsData
+    'sensorType': "humidity_senser",
     'message': "Monitoring for potential dryness.",
     'date': "13 August 2024",
     'time': "10:30 am",

@@ -46,6 +46,27 @@ const authController = {
       res.status(500).json({ message: 'Server error' });
     }
   },
+
+  updateUserLanguage: async (req, res)=>{
+    console.log("start Update Language");
+    const {userId, language}=  req.body;
+  
+    try {
+      const [result] = await pool.query(
+        'UPDATE users SET language = ? WHERE user_id = ?',
+        [language, userId]
+      );
+  
+      if (result.affectedRows > 0) {
+        res.status(200).json({ message: 'User language updated successfully' });
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (error) {
+      console.error('Error updating user language:', error);
+      res.status(500).json({ error: 'Failed to update user language' });
+    } 
+   },
 };
 
 module.exports = authController;
