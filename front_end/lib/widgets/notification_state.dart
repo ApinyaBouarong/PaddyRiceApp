@@ -6,6 +6,7 @@ class NotificationState extends ChangeNotifier {
 
   void showNotificationDot() {
     _shouldShowNotification = true;
+    print("Notification dot should be visible now.");
     notifyListeners();
   }
 

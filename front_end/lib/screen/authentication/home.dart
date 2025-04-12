@@ -429,38 +429,39 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
         backgroundColor: maincolor,
         title: Text(localizations!.title, style: appBarFont),
         actions: [
-          IconButton(
-            onPressed: () {
-              Provider.of<NotificationState>(context, listen: false)
-                  .hideNotificationDot();
-              context.router.replaceNamed('/notifi');
-            },
-            icon: Stack(
-              children: <Widget>[
-                Icon(
-                  Icons.notifications_outlined,
-                  size: 24,
-                  color: Provider.of<NotificationState>(context)
-                          .shouldShowNotification
-                      ? Colors.red
-                      : iconcolor,
-                ),
-                if (Provider.of<NotificationState>(context)
-                    .shouldShowNotification)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(237, 76, 47, 1),
-                        shape: BoxShape.circle,
-                      ),
+          Consumer<NotificationState>(
+            builder: (context, notificationState, child) {
+              return IconButton(
+                onPressed: () {
+                  notificationState.hideNotificationDot();
+                  context.router.replaceNamed('/notifi');
+                },
+                icon: Stack(
+                  children: <Widget>[
+                    Icon(
+                      Icons.notifications_outlined,
+                      size: 24,
+                      color: notificationState.shouldShowNotification
+                          ? Colors.red
+                          : iconcolor,
                     ),
-                  ),
-              ],
-            ),
+                    if (notificationState.shouldShowNotification)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(237, 76, 47, 1),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16),

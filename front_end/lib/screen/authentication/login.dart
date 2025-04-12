@@ -40,6 +40,7 @@ class _LoginRouteState extends State<LoginRoute> {
   bool _isFirstLoad = true;
   String? _firebaseToken;
   bool _isMounted = false;
+  bool _autoLoginFailed = false;
 
   @override
   void initState() {
@@ -70,7 +71,7 @@ class _LoginRouteState extends State<LoginRoute> {
     if (remembered && savedEmail != null && savedPassword != null) {
       _emailOrPhoneController.text = savedEmail;
       _passwordController.text = savedPassword;
-      _autoLogin(); // Attempt auto login immediately after loading credentials
+      await _autoLogin(); // Attempt auto login immediately after loading credentials
     }
     _isFirstLoad = false;
   }
@@ -157,6 +158,7 @@ class _LoginRouteState extends State<LoginRoute> {
 
     setState(() {
       _isLoggingInAutomatically = true;
+      _autoLoginFailed = false;
     });
 
     try {
@@ -165,6 +167,7 @@ class _LoginRouteState extends State<LoginRoute> {
       print('Auto login failed: $e');
       setState(() {
         _isLoggingInAutomatically = false;
+        _autoLoginFailed = true;
       });
     }
   }
@@ -279,6 +282,12 @@ class _LoginRouteState extends State<LoginRoute> {
         _errorMessage = S.of(context)!.something_went_wrong;
       });
       print('Error: $e');
+    } finally {
+      if (_isMounted) {
+        setState(() {
+          _isLoggingInAutomatically = false; // Ensure loading state is reset
+        });
+      }
     }
   }
 
