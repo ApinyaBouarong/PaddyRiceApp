@@ -3,6 +3,7 @@ const router = express.Router();
 const authRoutes = require('./auth');
 const deviceRoutes = require('./device');
 const profileRoutes = require('./profile');
+const notificationRoutes = require('./notification')
 const otpController = require('../controllers/otp');
 const admin = require('../config/firebase');
 const clientMqtt = require('../config/mqtt');
@@ -12,6 +13,7 @@ const pool = require('../config/db');
 router.use('/', authRoutes);
 router.use('/', deviceRoutes);
 router.use('/', profileRoutes);
+router.use('/', notificationRoutes)
 
 router.post('/sendToken', async (req, res) => {
   console.log('Received request to send token');

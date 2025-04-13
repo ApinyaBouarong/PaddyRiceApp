@@ -190,5 +190,10 @@
   "remember_me": "จำฉันไว้",
   "device_deleted_successfully": "ลบอุปกรณ์สำเร็จ",
   "network_error": "ข้อผิดพลาดของเครือข่าย",
-  "delete_confirmation_serial": "คุณต้องการลบอุปกรณ์ \"{deviceName}\" ใช่หรือไม่?"
+  "delete_confirmation_serial": "คุณต้องการลบอุปกรณ์ \"{deviceName}\" ใช่หรือไม่?",
+  "humidity_senser": "เซ็นเซอร์วัดความชื้น",
+  "back_senser": "เซ็นเซอร์วัดอุณหภูมิ (ด้านหลัง)",
+  "front_senser": "เซ็นเซอร์วัดอุณหภูมิ (ด้านหน้า)",
+  "back_temp_exceeded": "อุณหภูมิด้านหลัง {currentBackTemp} สูงกว่าเป้าหมาย {targetBackTemp}",
+  "front_temp_exceeded": "อุณหภูมิด้านหน้า {currentFrontTemp} สูงกว่าเป้าหมาย {targetFrontTemp}"
 }

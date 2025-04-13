@@ -190,5 +190,10 @@
   "remember_me": "Remember Me",
   "device_deleted_successfully": "Device Delete Successfully",
   "network_error": "Network Error",
-  "delete_confirmation_serial": "Is the device facility \"{deviceName}\" required?"
+  "delete_confirmation_serial": "Is the device facility \"{deviceName}\" required?",
+  "humidity_senser": "Humidity monitoring Sensor",
+  "back_senser": "Back Temperature Sensor",
+  "front_senser": "Front Temperature Sensor",
+  "back_temp_exceeded": "Back temperature {currentBackTemp} °C exceeds target {targetBackTemp} °C",
+  "front_temp_exceeded": "Front temperature {currentFrontTemp} °C exceeds target {targetFrontTemp} °C"
 }

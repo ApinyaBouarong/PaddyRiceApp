@@ -433,7 +433,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
             builder: (context, notificationState, child) {
               return IconButton(
                 onPressed: () {
-                  notificationState.hideNotificationDot();
+                  // notificationState.hideNotificationDot();
                   context.router.replaceNamed('/notifi');
                 },
                 icon: Stack(
