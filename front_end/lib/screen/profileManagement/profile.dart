@@ -46,6 +46,30 @@ class ProfileRoute extends StatefulWidget {
 class _ProfileRouteState extends State<ProfileRoute> {
   late Future<UserProfile> _userProfile;
 
+  Future<void> _updateUserLanguageOnServer(
+      int userId, String languageCode) async {
+    try {
+      print("----------API update language----------");
+      print('userID: $userId');
+      print('language: $languageCode');
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/updateUserLanguage'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'userId': userId, 'language': languageCode}),
+      );
+
+      print("----------API update language----------");
+      if (response.statusCode == 200) {
+        print('Language updated on server: $languageCode');
+      } else {
+        print('Failed to update language on server: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error sending language to server: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -113,14 +137,6 @@ class _ProfileRouteState extends State<ProfileRoute> {
       backgroundColor: maincolor,
       appBar: AppBar(
         backgroundColor: maincolor,
-        // leading: Padding(
-        //   padding: const EdgeInsets.all(8.0),
-        //   child: CircleAvatar(
-        //     radius: 20,
-        //     backgroundColor: maincolor,
-        //     backgroundImage: AssetImage('lib/assets/icon/Pad_icon.png'),
-        //   ),
-        // ),
         title: Text(S.of(context)!.my_profile, style: appBarFont),
         centerTitle: true,
         elevation: 0,
@@ -154,6 +170,15 @@ class LanguageChangeTile extends StatefulWidget {
 
 class _LanguageChangeTileState extends State<LanguageChangeTile> {
   Locale? _currentLocale;
+
+  Future<void> _updateUserLanguageOnServer(Locale newLocale) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+    if (userId != null) {
+      await _ProfileRouteState()
+          ._updateUserLanguageOnServer(userId, newLocale.languageCode);
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -212,12 +237,13 @@ class _LanguageChangeTileState extends State<LanguageChangeTile> {
     );
   }
 
-  void _changeLanguage(Locale locale) {
+  void _changeLanguage(Locale locale) async {
     if (locale != _currentLocale) {
       setState(() {
         _currentLocale = locale;
         MyApp.setLocale(context, locale);
       });
+      await _updateUserLanguageOnServer(locale); // เรียก API เมื่อเปลี่ยนภาษา
       Navigator.of(context).pop();
     }
   }
@@ -366,18 +392,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
     return savedImage.path;
   }
-  // Future<String> _saveImageToLocal(File image) async {
-  //   final directory = await getApplicationDocumentsDirectory();
-  //   final fileName = path.basename(image.path);
-  //   final savedImage = await image.copy('${directory.path}/$fileName');
-
-  //   // บันทึก path ของรูปใน SharedPreferences
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.setString(
-  //       'user_profile_image_${widget.user.email}', savedImage.path);
-
-  //   return savedImage.path;
-  // }
 
   // โหลดรูปจากเครื่องเมื่อเปิดแอป
   Future<void> _loadImageFromLocal() async {
@@ -390,16 +404,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       });
     }
   }
-  // Future<void> _loadImageFromLocal() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final savedImagePath =
-  //       prefs.getString('user_profile_image_${widget.user.email}');
-  //   if (savedImagePath != null && File(savedImagePath).existsSync()) {
-  //     setState(() {
-  //       _imagePath = savedImagePath;
-  //     });
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -439,7 +443,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                             ? FileImage(File(_imagePath!))
                             : AssetImage('lib/assets/icon/profile.png')
                                 as ImageProvider,
-                        // fit: BoxFit.cover,
                         alignment: Alignment.center,
                         scale: 1.2,
                       ),

@@ -1,27 +1,29 @@
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
+const pool = require("../config/db");
+const bcrypt = require("bcrypt");
 
 const authController = {
   login: async (req, res) => {
     const { emailOrPhone, password } = req.body;
     try {
       const [rows] = await pool.query(
-        'SELECT user_id, password FROM users WHERE email = ? OR phone_number = ?',
+        "SELECT user_id, password FROM users WHERE email = ? OR phone_number = ?",
         [emailOrPhone, emailOrPhone]
       );
       if (rows.length === 0) {
-        return res.status(401).json({ message: 'Invalid email or phone number' });
+        return res
+          .status(401)
+          .json({ message: "Invalid email or phone number" });
       }
       const user = rows[0];
       const isPasswordCorrect = await bcrypt.compare(password, user.password);
       if (!isPasswordCorrect) {
-        return res.status(401).json({ message: 'Incorrect password' });
+        return res.status(401).json({ message: "Incorrect password" });
       }
       res.status(200).json({ user_id: user.user_id });
-      console.log('User logged in:', user.user_id);
+      console.log("User logged in:", user.user_id);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: "Server error" });
     }
   },
 
@@ -29,44 +31,46 @@ const authController = {
     const { name, surname, phone, email, password } = req.body;
     try {
       const [existingUsers] = await pool.query(
-        'SELECT * FROM users WHERE email = ? OR phone_number = ?',
+        "SELECT * FROM users WHERE email = ? OR phone_number = ?",
         [email, phone]
       );
       if (existingUsers.length > 0) {
-        return res.status(409).json({ message: 'Email or phone already exists' });
+        return res
+          .status(409)
+          .json({ message: "Email or phone already exists" });
       }
       const hashedPassword = await bcrypt.hash(password, 10);
       await pool.query(
-        'INSERT INTO users (name, surname, phone_number, email, password) VALUES (?, ?, ?, ?, ?)',
+        "INSERT INTO users (name, surname, phone_number, email, password) VALUES (?, ?, ?, ?, ?)",
         [name, surname, phone, email, hashedPassword]
       );
-      res.status(201).json({ message: 'User registered successfully' });
+      res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: "Server error" });
     }
   },
 
-  updateUserLanguage: async (req, res)=>{
+  updateUserLanguage: async (req, res) => {
     console.log("start Update Language");
-    const {userId, language}=  req.body;
-  
+    const { userId, language } = req.body;
+
     try {
       const [result] = await pool.query(
-        'UPDATE users SET language = ? WHERE user_id = ?',
+        "UPDATE users SET language = ? WHERE user_id = ?",
         [language, userId]
       );
-  
+
       if (result.affectedRows > 0) {
-        res.status(200).json({ message: 'User language updated successfully' });
+        res.status(200).json({ message: "User language updated successfully" });
       } else {
-        res.status(404).json({ error: 'User not found' });
+        res.status(404).json({ error: "User not found" });
       }
     } catch (error) {
-      console.error('Error updating user language:', error);
-      res.status(500).json({ error: 'Failed to update user language' });
-    } 
-   },
+      console.error("Error updating user language:", error);
+      res.status(500).json({ error: "Failed to update user language" });
+    }
+  },
 };
 
 module.exports = authController;

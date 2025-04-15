@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const notificationController = require('../controllers/notification')
+const notificationController = require("../controllers/notification");
 
-router.get('/notification/:deviceId', notificationController.getNotification );
+router.get("/notification/:deviceId", notificationController.getNotification);
 
 module.exports = router;

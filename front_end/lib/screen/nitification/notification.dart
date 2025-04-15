@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -29,23 +27,24 @@ class _NotifiRouteState extends State<NotifiRoute> {
   bool _isLoading = true;
   String? _deviceName;
   String? _userId;
+  Timer? _refreshTimer;
 
-  void _subscribeToFirebaseMessages() {
-    if (Platform.isAndroid || Platform.isIOS) {
-      _onMessageSubscription =
-          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        if (message.notification != null && message.data.isNotEmpty) {
-          final newNotification =
-              _mapFirebaseMessageToNotification(message.data);
-          setState(() {
-            _notifications.insert(0, newNotification);
-          });
-        }
-      });
-    } else {
-      throw UnsupportedError('Unsupported platform');
-    }
-  }
+  // void _subscribeToFirebaseMessages() {
+  //   if (Platform.isAndroid || Platform.isIOS) {
+  //     _onMessageSubscription =
+  //         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //       if (message.notification != null && message.data.isNotEmpty) {
+  //         final newNotification =
+  //             _mapFirebaseMessageToNotification(message.data);
+  //         setState(() {
+  //           _notifications.insert(0, newNotification);
+  //         });
+  //       }
+  //     });
+  //   } else {
+  //     throw UnsupportedError('Unsupported platform');
+  //   }
+  // }
 
   Map<String, dynamic> _mapFirebaseMessageToNotification(
       Map<String, dynamic> data) {
@@ -182,13 +181,23 @@ class _NotifiRouteState extends State<NotifiRoute> {
   @override
   void initState() {
     super.initState();
-    _subscribeToFirebaseMessages();
+    // _subscribeToFirebaseMessages();
     _loadData();
+    _refreshTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+      if (_userId != null && mounted) {
+        _fetchDeviceId(_userId!).then((deviceData) {
+          if (deviceData != null) {
+            _fetchNotifications(deviceId: deviceData['deviceId']);
+          }
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _onMessageSubscription?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
   }
 
@@ -237,10 +246,21 @@ class _NotifiRouteState extends State<NotifiRoute> {
           DecoratedImage(),
           _isLoading
               ? Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  itemCount: _notifications.length,
-                  itemBuilder: (context, index) =>
-                      _buildNotificationCard(_notifications[index]),
+              : RefreshIndicator(
+                  onRefresh: () async {
+                    if (_userId != null) {
+                      final deviceData = await _fetchDeviceId(_userId!);
+                      if (deviceData != null) {
+                        await _fetchNotifications(
+                            deviceId: deviceData['deviceId']);
+                      }
+                    }
+                  },
+                  child: ListView.builder(
+                    itemCount: _notifications.length,
+                    itemBuilder: (context, index) =>
+                        _buildNotificationCard(_notifications[index]),
+                  ),
                 ),
         ],
       ),

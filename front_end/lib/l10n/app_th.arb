@@ -195,5 +195,6 @@
   "back_senser": "เซ็นเซอร์วัดอุณหภูมิ (ด้านหลัง)",
   "front_senser": "เซ็นเซอร์วัดอุณหภูมิ (ด้านหน้า)",
   "back_temp_exceeded": "อุณหภูมิด้านหลัง {currentBackTemp} สูงกว่าเป้าหมาย {targetBackTemp}",
-  "front_temp_exceeded": "อุณหภูมิด้านหน้า {currentFrontTemp} สูงกว่าเป้าหมาย {targetFrontTemp}"
+  "front_temp_exceeded": "อุณหภูมิด้านหน้า {currentFrontTemp} สูงกว่าเป้าหมาย {targetFrontTemp}",
+  "monitor_dryness": "เฝ้าระวังความแห้งที่อาจเกิดขึ้น"
 }
