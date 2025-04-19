@@ -301,11 +301,12 @@ class _NotifiRouteState extends State<NotifiRoute> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: data['sensorType'] == 'humidity'
-                        ? Colors.blue
-                        : data['sensorType'] == 'back_temp' ||
-                                data['sensorType'] == 'front_temp'
-                            ? Colors.red
-                            : Colors.grey,
+                        ? humidity
+                        : data['sensorType'] == 'back_temp'
+                            ? backTemp
+                            : data['sensorType'] == 'front_temp'
+                                ? frontTemp
+                                : Colors.grey,
                   ),
                   margin: const EdgeInsets.only(right: 8.0),
                 ),

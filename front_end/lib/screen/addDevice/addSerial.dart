@@ -8,9 +8,11 @@ import 'package:paddy_rice/constants/color.dart';
 import 'package:paddy_rice/constants/font_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:paddy_rice/router/routes.gr.dart';
+import 'package:paddy_rice/widgets/OkDialog.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:paddy_rice/widgets/custom_button.dart'; // สมมติว่าคุณมี CustomButton
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import สำหรับ S
 
 @RoutePage()
 class AddSerialRoute extends StatefulWidget {
@@ -43,7 +45,7 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
           return null;
         }
       } else if (response.statusCode == 404) {
-        return null; // ไม่พบอุปกรณ์
+        return null;
       } else {
         _showErrorSnackBar(
             'Failed to check serial number. Status: ${response.statusCode}');
@@ -77,30 +79,27 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
       print('Start assigning user to device...');
       if (response.statusCode == 200) {
         print('User assigned to device successfully!');
-        if (json.decode(response.body)['status'] == 'success') {
-          _serialNumberController.clear();
-          // แสดง OkDialog เมื่อสำเร็จ
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("สำเร็จ"),
-                content: Text("เพิ่ม Serial Number สำเร็จ"),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text("ตกลง"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      context.router.replace(BottomNavigationRoute(page: 0));
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        } else {
-          _showSuccessSnackBar('Device assigned to user successfully!');
-        }
+        // if (json.decode(response.body)['status'] == 'success') {
+        _serialNumberController.clear();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return OkDialog(
+              title: S.of(context)!.success,
+              content: S.of(context)!.addSerialNumberSuccess,
+              parentContext: context,
+              confirmButtonText: S.of(context)!.ok,
+              cancelButtonText: '',
+              onConfirm: () {
+                Navigator.of(context).pop();
+                context.router.replace(BottomNavigationRoute(page: 0));
+              },
+            );
+          },
+        );
+        // } else {
+        //   _showSuccessSnackBar('Device assigned to user successfully!');
+        // }
       } else {
         _showErrorSnackBar(
             'Failed to assign user to device. Status: ${response.statusCode}');
@@ -176,7 +175,7 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
       }
     } else {
       setState(() {
-        _errorMessage = 'Please enter a serial number.';
+        _errorMessage = S.of(context)!.pleaseEnterSerialNumber;
       });
     }
   }
@@ -187,7 +186,7 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
       appBar: AppBar(
         backgroundColor: maincolor,
         title: Text(
-          "Add Serial Number",
+          S.of(context)!.addSerialNumber,
           style: appBarFont,
         ),
         centerTitle: true,
@@ -201,15 +200,16 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
         children: [
           DecoratedImage(),
           Center(
-            child: SingleChildScrollView(
+            child: Container(
+              width: 312,
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  const SizedBox(height: 32),
                   TextFieldCustom(
                     controller: _serialNumberController,
-                    labelText: "Serial Number",
+                    labelText: S.of(context)!.serial_number,
                     suffixIcon: Icons.qr_code_scanner,
                     isError: _errorMessage != null,
                     errorMessage: _errorMessage ?? "",
@@ -217,7 +217,34 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
                       context.router.replaceNamed('/scan');
                     },
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  // Row(
+                  //   children: [
+                  //     Text(
+                  //       "Enter the serial number found on your device \nlabel",
+                  //       style:
+                  //           TextStyle(fontSize: 12, color: unnecessary_colors),
+                  //     ),
+                  //   ],
+                  // ),
+                  Row(
+                    children: [
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () {
+                          context.router.replaceNamed('/scan');
+                        },
+                        child: Text(
+                          S.of(context)!.scanQRCode,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: unnecessary_colors,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   Stack(
                     alignment: Alignment.center,
                     children: [
@@ -231,7 +258,7 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
                         ),
                         onPressed: _isLoading ? null : _handleAddSerial,
                         child: Text(
-                          "Submit",
+                          S.of(context)!.add_device,
                           style: TextStyle(
                             color: fontcolor,
                             fontSize: 18,
@@ -252,7 +279,7 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
                           ),
                         ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -293,14 +320,12 @@ class TextFieldCustom extends StatefulWidget {
 class _TextFieldCustomState extends State<TextFieldCustom> {
   late FocusNode _focusNode;
   bool _isFocused = false;
-  bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
     _focusNode.addListener(_handleFocusChange);
-    widget.controller.addListener(_handleTextChange);
   }
 
   void _handleFocusChange() {
@@ -309,17 +334,9 @@ class _TextFieldCustomState extends State<TextFieldCustom> {
     });
   }
 
-  void _handleTextChange() {
-    setState(() {
-      _hasText = widget.controller.text.isNotEmpty;
-      widget.onChanged?.call(widget.controller.text);
-    });
-  }
-
   @override
   void dispose() {
     _focusNode.removeListener(_handleFocusChange);
-    widget.controller.removeListener(_handleTextChange);
     _focusNode.dispose();
     super.dispose();
   }
@@ -328,6 +345,7 @@ class _TextFieldCustomState extends State<TextFieldCustom> {
   Widget build(BuildContext context) {
     return Container(
       width: 312,
+      // height: 56,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -336,31 +354,26 @@ class _TextFieldCustomState extends State<TextFieldCustom> {
             controller: widget.controller,
             obscureText: widget.obscureText,
             validator: widget.validator,
+            onChanged: widget.onChanged,
+            style: TextStyle(color: iconcolor, fontSize: 16),
             decoration: InputDecoration(
               filled: true,
               fillColor: fill_color,
               contentPadding:
-                  EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              suffixIcon: (_isFocused)
-                  ? IconButton(
-                      icon: Icon(widget.suffixIcon, color: iconcolor),
-                      onPressed: widget.onSuffixIconPressed,
-                    )
-                  : null,
+                  EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              // suffixIcon: IconButton(
+              //   icon: Icon(widget.suffixIcon, color: unnecessary_colors),
+              //   onPressed: widget.onSuffixIconPressed,
+              // ),
               labelText: widget.labelText,
               labelStyle: TextStyle(
-                color: _isFocused
-                    ? focusedBorder_color
-                    : widget.isError
-                        ? error_color
-                        : unnecessary_colors,
+                color: unnecessary_colors,
                 fontSize: 16,
               ),
+              hintText: S.of(context)!.enterDeviceSerialNumber,
+              hintStyle: TextStyle(color: unnecessary_colors),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: widget.isError ? error_color : fill_color,
-                  width: 1,
-                ),
+                borderSide: BorderSide(color: fill_color, width: 1),
                 borderRadius: BorderRadius.circular(8),
               ),
               focusedBorder: OutlineInputBorder(

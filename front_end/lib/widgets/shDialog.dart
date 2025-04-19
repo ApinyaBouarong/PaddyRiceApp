@@ -28,7 +28,7 @@ class ShDialog extends StatelessWidget {
           Radius.circular(12.0),
         ),
       ),
-      backgroundColor: Colors.transparent, // ทำให้พื้นหลังใส
+      backgroundColor: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
           color: fill_color,
@@ -84,7 +84,7 @@ class ShDialog extends StatelessWidget {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: buttoncolor, // สีปุ่ม Confirm
+                    backgroundColor: buttoncolor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),

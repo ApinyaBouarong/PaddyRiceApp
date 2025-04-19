@@ -6,6 +6,7 @@ import 'package:paddy_rice/constants/api.dart';
 import 'package:paddy_rice/constants/color.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:paddy_rice/constants/font_size.dart';
+import 'package:paddy_rice/screen/device/deviceStart.dart';
 import 'package:paddy_rice/screen/device/deviceState.dart';
 import 'package:paddy_rice/services/FCMTokenService.dart';
 import 'package:paddy_rice/widgets/OkDialog.dart';
@@ -39,6 +40,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   bool _isTempChanged = false;
   late MQTTService _mqttService;
   String _mqttMessage = "No data received";
+  int deviceId = 0;
   double frontTemperature = 0.0;
   double rearTemperature = 0.0;
   double moisture = 0.0;
@@ -47,6 +49,14 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   bool isDataReceived = false;
   // bool shouldShowNotification = false;
   Map<String, DeviceData> deviceDataMap = {};
+
+  bool _isDrying = false;
+
+  void _onDryingStarted() {
+    setState(() {
+      _isDrying = true;
+    });
+  }
 
   @override
   void initState() {
@@ -61,19 +71,51 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     _mqttService.connect().then((_) {
       _mqttService.listenToMessages((message) {
         setState(() {
-          // _mqttMessage = message;
           Map<String, dynamic> data = jsonDecode(message);
-          frontTemperature = data['front_temperature']?.toDouble() ?? 0.0;
-          rearTemperature = data['rear_temperature']?.toDouble() ?? 0.0;
-          moisture = data['moisture']?.toDouble() ?? 0.0;
-          // int deviceStatus = data['status'] ?? 0;
+          print('--------------------------------------------------------');
+          print('mqtt server: $data');
+
+          int id = int.tryParse(data['device_id'].toString()) ?? -1;
+          print('MQTT Device ID: $id');
+          double frontTemp = data['front_temp']?.toDouble() ?? 0.0;
+          double backTemp = data['back_temp']?.toDouble() ?? 0.0;
+          double humidity = data['humidity']?.toDouble() ?? 0.0;
+
+          int index = devices.indexWhere((device) {
+            print(
+                'Checking device ID: ${device.id} (Type: ${device.id.runtimeType}) against MQTT ID: $id (Type: ${id.runtimeType})'); // เพิ่ม Log
+            return int.tryParse(device.id) == id;
+          });
+          print('Found Device Index: $index');
+          if (index != -1) {
+            devices[index].frontTemp = frontTemp;
+            devices[index].backTemp = backTemp;
+            devices[index].humidity = humidity;
+            devices[index].status = true;
+
+            double targetFront = devices[index].targetFrontTemp;
+            double targetBack = devices[index].targetBackTemp;
+            double targetHumidity = devices[index].targetHumidity;
+
+            if (frontTemp > targetFront ||
+                backTemp > targetBack ||
+                humidity > targetHumidity) {
+              chackDeviceTargetValues(
+                devices[index].id,
+                devices[index].name,
+                frontTemp,
+                backTemp,
+                humidity,
+              );
+            }
+          }
+
           isDataReceived = true;
           _resetMqttTimeoutTimer();
           print("อัปเดตข้อมูลจาก MQTT");
-          print("Front Temp: $frontTemperature");
-          print("Rear Temp: $rearTemperature");
-          print("Moisture: $moisture");
-          // print("Status: $deviceStatus");
+          print("Front Temp: $frontTemp");
+          print("Rear Temp: $backTemp");
+          print("Moisture: $humidity");
         });
       });
     }).catchError((error) {
@@ -298,124 +340,124 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
 
   // Show delete confirmation dialog
 
-  Future<void> _deleteDevice(String deviceId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final int? userId = prefs.getInt('userId');
+  // Future<void> _deleteDevice(String deviceId) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final int? userId = prefs.getInt('userId');
 
-    if (userId == null) {
-      print('User ID not found, cannot update device.');
-      return;
-    }
-    print('start delete device process');
-    print('Device ID: $deviceId');
-    print('User ID: $userId');
-    final urlGetSerial = '${ApiConstants.baseUrl}/device/$deviceId/$userId';
+  //   if (userId == null) {
+  //     print('User ID not found, cannot update device.');
+  //     return;
+  //   }
+  //   print('start delete device process');
+  //   print('Device ID: $deviceId');
+  //   print('User ID: $userId');
+  //   final urlGetSerial = '${ApiConstants.baseUrl}/device/$deviceId/$userId';
 
-    try {
-      final responseGetSerial = await http.get(
-        Uri.parse(urlGetSerial),
-        headers: {'Content-Type': 'application/json'},
-      );
+  //   try {
+  //     final responseGetSerial = await http.get(
+  //       Uri.parse(urlGetSerial),
+  //       headers: {'Content-Type': 'application/json'},
+  //     );
 
-      if (responseGetSerial.statusCode == 200) {
-        print('Get Serial Number Response: ${responseGetSerial.body}');
+  //     if (responseGetSerial.statusCode == 200) {
+  //       print('Get Serial Number Response: ${responseGetSerial.body}');
 
-        try {
-          final Map<String, dynamic> responseData =
-              jsonDecode(responseGetSerial.body);
-          final String? serialNumber = responseData['serialNumber'];
-          if (serialNumber != null) {
-            print('Serial Number from API: $serialNumber');
-            final urlUpdate =
-                '${ApiConstants.baseUrl}/devices/userID/serialNumber/update';
-            final responseUpdate = await http.put(
-              Uri.parse(urlUpdate),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                'userId': null,
-                'serialNumber': serialNumber,
-              }),
-            );
-            print(
-                'Update Response: ${responseUpdate.statusCode} - ${responseUpdate.body}');
-            if (responseUpdate.statusCode == 200) {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return OkDialog(
-                    title: 'สำเร็จ',
-                    content: 'ยกเลิกการเชื่อมต่ออุปกรณ์สำเร็จ',
-                    parentContext: context,
-                    confirmButtonText: 'ตกลง',
-                    cancelButtonText: '',
-                    onConfirm: () {
-                      Navigator.of(context).pop();
-                      _initializeDevices();
-                    },
-                  );
-                },
-              );
-            } else {
-              print(
-                  'Failed to update device user: ${responseUpdate.statusCode} - ${responseUpdate.body}');
-            }
-          } else {
-            print('Serial Number not found in the get response.');
-          }
-        } catch (e) {
-          print('Error decoding JSON for serial number: $e');
-        }
-      } else if (responseGetSerial.statusCode == 404) {
-        print("Device not found to get serial number.");
-      } else {
-        print(
-            'Failed to get serial number: ${responseGetSerial.statusCode} - ${responseGetSerial.body}');
-      }
-    } catch (e) {
-      print('Error during get serial number request: $e');
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return OkDialog(
-            title: 'ข้อผิดพลาด',
-            content: 'เกิดข้อผิดพลาดในการเชื่อมต่อ: $e',
-            parentContext: context,
-            confirmButtonText: 'ตกลง',
-            cancelButtonText: '',
-            onConfirm: () {
-              Navigator.of(context).pop();
-            },
-          );
-        },
-      );
-    }
-  }
+  //       try {
+  //         final Map<String, dynamic> responseData =
+  //             jsonDecode(responseGetSerial.body);
+  //         final String? serialNumber = responseData['serialNumber'];
+  //         if (serialNumber != null) {
+  //           print('Serial Number from API: $serialNumber');
+  //           final urlUpdate =
+  //               '${ApiConstants.baseUrl}/devices/userID/serialNumber/update';
+  //           final responseUpdate = await http.put(
+  //             Uri.parse(urlUpdate),
+  //             headers: {'Content-Type': 'application/json'},
+  //             body: jsonEncode({
+  //               'userId': null,
+  //               'serialNumber': serialNumber,
+  //             }),
+  //           );
+  //           print(
+  //               'Update Response: ${responseUpdate.statusCode} - ${responseUpdate.body}');
+  //           if (responseUpdate.statusCode == 200) {
+  //             showDialog(
+  //               context: context,
+  //               builder: (BuildContext context) {
+  //                 return OkDialog(
+  //                   title: 'สำเร็จ',
+  //                   content: 'ยกเลิกการเชื่อมต่ออุปกรณ์สำเร็จ',
+  //                   parentContext: context,
+  //                   confirmButtonText: 'ตกลง',
+  //                   cancelButtonText: '',
+  //                   onConfirm: () {
+  //                     Navigator.of(context).pop();
+  //                     _initializeDevices();
+  //                   },
+  //                 );
+  //               },
+  //             );
+  //           } else {
+  //             print(
+  //                 'Failed to update device user: ${responseUpdate.statusCode} - ${responseUpdate.body}');
+  //           }
+  //         } else {
+  //           print('Serial Number not found in the get response.');
+  //         }
+  //       } catch (e) {
+  //         print('Error decoding JSON for serial number: $e');
+  //       }
+  //     } else if (responseGetSerial.statusCode == 404) {
+  //       print("Device not found to get serial number.");
+  //     } else {
+  //       print(
+  //           'Failed to get serial number: ${responseGetSerial.statusCode} - ${responseGetSerial.body}');
+  //     }
+  //   } catch (e) {
+  //     print('Error during get serial number request: $e');
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return OkDialog(
+  //           title: 'ข้อผิดพลาด',
+  //           content: 'เกิดข้อผิดพลาดในการเชื่อมต่อ: $e',
+  //           parentContext: context,
+  //           confirmButtonText: 'ตกลง',
+  //           cancelButtonText: '',
+  //           onConfirm: () {
+  //             Navigator.of(context).pop();
+  //           },
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
 
-  void _showDeleteConfirmationDialog(Device device) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('ยืนยันการยกเลิก'),
-          content: Text(
-              'คุณต้องการยกเลิกการเชื่อมต่ออุปกรณ์ "${device.name}" (ID: ${device.id}) หรือไม่?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('ยกเลิก'),
-            ),
-            TextButton(
-              onPressed: () {
-                _deleteDevice(device.id);
-                Navigator.of(context).pop();
-              },
-              child: const Text('ยืนยัน'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void _showDeleteConfirmationDialog(Device device) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('ยืนยันการยกเลิก'),
+  //         content: Text(
+  //             'คุณต้องการยกเลิกการเชื่อมต่ออุปกรณ์ "${device.name}" (ID: ${device.id}) หรือไม่?'),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(),
+  //             child: const Text('ยกเลิก'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               _deleteDevice(device.id);
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: const Text('ยืนยัน'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -478,7 +520,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                 onChanged: (value) {
                   final menuItem = value as MenuItem;
                   if (menuItem.text == localizations.add_device) {
-                    context.router.replaceNamed('/addDevice');
+                    context.router.replaceNamed('/addSerial');
                   } else if (menuItem.text == localizations.scan) {
                     context.router.replaceNamed('/scan');
                   }
@@ -596,19 +638,48 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                         foregroundColor: fill_color,
                         icon: Icons.settings,
                       ),
-                      // SlidableAction(
-                      //   onPressed: (context) => onDeviceTap(device),
-                      //   backgroundColor: const Color.fromRGBO(247, 145, 19, 1),
-                      //   foregroundColor: fill_color,
-                      //   icon: Icons.settings,
-                      // ),
                       SlidableAction(
-                        onPressed: (context) =>
-                            _showDeleteConfirmationDialog(device),
-                        backgroundColor: const Color.fromRGBO(237, 76, 47, 1),
+                        onPressed: (context) {
+                          setState(() {
+                            _isDrying = !_isDrying;
+                          });
+
+                          if (_isDrying) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const DevicestartRoute()),
+                            );
+                            // อาจมี logic อื่นๆ เมื่อเริ่มอบ
+                          } else {
+                            // logic เมื่อหยุดอบ (ถ้ามี)
+                            // อาจมีการส่งคำสั่งหยุดไปยังอุปกรณ์
+                          }
+                        },
+                        backgroundColor: _isDrying ? Colors.red : startSystem,
                         foregroundColor: fill_color,
-                        icon: Icons.delete,
+                        icon: _isDrying ? Icons.stop : Icons.power_settings_new,
                       ),
+                      // SlidableAction(
+                      //   onPressed: (context) {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //           builder: (context) => const DevicestartRoute()),
+                      //     );
+                      //   },
+                      //   backgroundColor: startSystem,
+                      //   foregroundColor: fill_color,
+                      //   icon: Icons.power_settings_new,
+                      // ),
+                      // SlidableAction(
+                      //   onPressed: (context) =>
+                      //       _showDeleteConfirmationDialog(device),
+                      //   backgroundColor: const Color.fromRGBO(237, 76, 47, 1),
+                      //   foregroundColor: fill_color,
+                      //   icon: Icons.delete,
+                      // ),
                     ],
                   ),
                   child: Container(
@@ -635,7 +706,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                // ใช้ Expanded เพื่อให้ข้อความไม่ล้น
                                 child: Text(
                                   device.name.length > 21
                                       ? '${device.name.substring(0, 21)}...'
@@ -672,14 +742,12 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      '${frontTemperature.toStringAsFixed(2)} C',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: fontcolor),
+                                    Icon(
+                                      Icons.thermostat_outlined,
+                                      size: 24,
+                                      color: frontTemp,
                                     ),
                                     Text(
                                       S.of(context)!.temp_front,
@@ -687,19 +755,24 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                                           fontSize: 12,
                                           color: unnecessary_colors),
                                     ),
+                                    Text(
+                                      '${device.frontTemp.toStringAsFixed(1)} °C',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: frontTemp),
+                                    ),
                                   ],
                                 ),
                               ),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      '${rearTemperature.toStringAsFixed(2)} C',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: fontcolor),
+                                    Icon(
+                                      Icons.thermostat_outlined,
+                                      size: 24,
+                                      color: backTemp,
                                     ),
                                     Text(
                                       S.of(context)!.temp_back,
@@ -707,25 +780,37 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                                           fontSize: 12,
                                           color: unnecessary_colors),
                                     ),
+                                    Text(
+                                      '${device.backTemp.toStringAsFixed(1)} °C',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: backTemp),
+                                    ),
                                   ],
                                 ),
                               ),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      '${moisture.toStringAsFixed(2)} %',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: fontcolor),
+                                    Icon(
+                                      Icons.water_drop_outlined,
+                                      size: 24,
+                                      color: humidity,
                                     ),
                                     Text(
                                       S.of(context)!.humidity_,
                                       style: TextStyle(
                                           fontSize: 12,
                                           color: unnecessary_colors),
+                                    ),
+                                    Text(
+                                      '${device.humidity.toStringAsFixed(2)} %',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: humidity),
                                     ),
                                   ],
                                 ),

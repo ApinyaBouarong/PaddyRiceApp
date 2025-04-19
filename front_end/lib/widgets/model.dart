@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class Device {
   String name;
   final String id;
-  final bool status;
+  bool status;
   double frontTemp;
   double backTemp;
   double humidity;

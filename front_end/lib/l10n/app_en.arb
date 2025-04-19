@@ -195,5 +195,21 @@
   "back_senser": "Back Temperature Sensor",
   "front_senser": "Front Temperature Sensor",
   "back_temp_exceeded": "Back temperature {currentBackTemp} °C exceeds target {targetBackTemp} °C",
-  "front_temp_exceeded": "Front temperature {currentFrontTemp} °C exceeds target {targetFrontTemp} °C"
+  "front_temp_exceeded": "Front temperature {currentFrontTemp} °C exceeds target {targetFrontTemp} °C",
+  "start": "Start",
+  "saveSetting": "Save Setting",
+  "deviceDisconnect": "Device Disconnection Successful",
+  "doYouWantToDisconnectTheDevice": "Do you want to disconnect the device {name} (ID: {id})?",
+  "scanQRCode": "Scan QR Code",
+  "serial_number": "Serial Number",
+  "addSerialNumber": "Add Serial Number",
+  "enterDeviceSerialNumber": "Enter device serial number",
+  "pleaseEnterSerialNumber": "Please enter serial number",
+  "addSerialNumberSuccess": "Add serial number success",
+  "bakeRice": "Bake Rice",
+  "initialHumidity": "Initial Humidity",
+  "pleaseEnterInitialHumidity": "Please enter Initial humidity",
+  "humidityData": "Humidity Data",
+  "humidityDataDetail": "The initial moisture content of rice should be between 14-30% for best drying efficiency.",
+  "startBakingRice": "Start Baking Rice"
 }

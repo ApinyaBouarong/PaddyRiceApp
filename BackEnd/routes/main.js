@@ -9,11 +9,13 @@ const admin = require("../config/firebase");
 const clientMqtt = require("../config/mqtt");
 const { mqttTopic } = require("../config/mqtt");
 const pool = require("../config/db");
+const aiRoutes = require("./ai");
 
 router.use("/", authRoutes);
 router.use("/", deviceRoutes);
 router.use("/", profileRoutes);
 router.use("/", notificationRoutes);
+router.use("/", aiRoutes);
 
 router.post("/sendToken", async (req, res) => {
   console.log("Received request to send token");

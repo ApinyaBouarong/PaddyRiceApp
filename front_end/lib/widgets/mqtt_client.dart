@@ -4,10 +4,12 @@ import 'package:mqtt_client/mqtt_server_client.dart';
 class MQTTService {
   late MqttServerClient _client;
 
-  final String broker = '192.168.137.91';
+  final String broker = '192.168.0.106';
   final int port = 1883;
   final String clientId = 'flutter_mqtt_client';
   final String topic = 'sensor/data';
+  final String? username = 'mymqtt';
+  final String? password = 'paddy';
 
   Future<void> connect() async {
     _client = MqttServerClient(broker, clientId);
@@ -22,7 +24,8 @@ class MQTTService {
     final connMessage = MqttConnectMessage()
         .withClientIdentifier(clientId)
         .startClean()
-        .keepAliveFor(20);
+        .keepAliveFor(20)
+        .authenticateAs(username, password);
     _client.connectionMessage = connMessage;
 
     try {

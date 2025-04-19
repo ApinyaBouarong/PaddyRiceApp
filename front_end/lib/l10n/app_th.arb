@@ -196,5 +196,21 @@
   "front_senser": "เซ็นเซอร์วัดอุณหภูมิ (ด้านหน้า)",
   "back_temp_exceeded": "อุณหภูมิด้านหลัง {currentBackTemp} สูงกว่าเป้าหมาย {targetBackTemp}",
   "front_temp_exceeded": "อุณหภูมิด้านหน้า {currentFrontTemp} สูงกว่าเป้าหมาย {targetFrontTemp}",
-  "monitor_dryness": "เฝ้าระวังความแห้งที่อาจเกิดขึ้น"
+  "monitor_dryness": "เฝ้าระวังความแห้งที่อาจเกิดขึ้น",
+  "start": "เริ่ม",
+  "saveSetting": "บันทึกการตั้งค่า",
+  "deviceDisconnect": "ยกเลิกการเชื่อมต่ออุปกรณ์สำเร็จ",
+  "doYouWantToDisconnectTheDevice": "คุณต้องการยกเลิกการเชื่อมต่ออุปกรณ์ {name} (ID: {id}) หรือไม่?",
+  "scanQRCode": "สแกน QR Code",
+  "serial_number": "หมายเลขซีเรียล",  
+  "addSerialNumber": "เพิ่มหมายเลขซีเรียล",
+  "enterDeviceSerialNumber": "กรอกหมายเลขซีเรียลของอุปกรณ์",
+  "pleaseEnterSerialNumber": "กรุณากรอกหมายเลขซีเรียล",
+  "addSerialNumberSuccess": "เพิ่มหมายเลขซีเรียลสำเร็จ",
+  "bakeRice": "อบข้าว",
+  "initialHumidity": "ค่าความชื้นเริ่มต้น",
+  "pleaseEnterInitialHumidity": "กรุณากรอกค่าความชื้นเริ่มต้น",
+  "humidityData": "ข้อมูลความชื้น",
+  "humidityDataDetail": "ความชื้นเริ่มต้นของข้าวควรอยู่ที่ระหว่าง 14-30% เพื่อประสิทธิภาพการอบที่ดีที่สุด",
+  "startBakingRice": "เริ่มการอบข้าว"
 }

@@ -6,6 +6,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:paddy_rice/constants/color.dart';
 import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/constants/api.dart'; // Import ApiConstants
+import 'package:paddy_rice/router/routes.gr.dart';
+import 'package:paddy_rice/widgets/OkDialog.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -66,7 +68,7 @@ class _ScanRouteState extends State<ScanRoute> {
           return null;
         }
       } else if (response.statusCode == 404) {
-        return null; // ไม่พบอุปกรณ์
+        return null;
       } else {
         _showErrorSnackBar(
             'Failed to check serial number. Status: ${response.statusCode}');
@@ -99,8 +101,22 @@ class _ScanRouteState extends State<ScanRoute> {
       print('Assign User Response (Scan): ${response.body}');
       if (response.statusCode == 200) {
         print('Device assigned to user successfully (Scan)!');
-        _showSuccessSnackBar('Device assigned successfully!');
-        context.router.replaceNamed('/home');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return OkDialog(
+              title: S.of(context)!.success,
+              content: S.of(context)!.addSerialNumberSuccess,
+              parentContext: context,
+              confirmButtonText: S.of(context)!.ok,
+              cancelButtonText: '',
+              onConfirm: () {
+                Navigator.of(context).pop();
+                context.router.replace(BottomNavigationRoute(page: 0));
+              },
+            );
+          },
+        );
       } else {
         _showErrorSnackBar(
             'Failed to assign user to device. Status: ${response.statusCode}');

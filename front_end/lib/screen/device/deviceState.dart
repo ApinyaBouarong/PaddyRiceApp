@@ -13,7 +13,10 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http; // HTTP package for API calls
 import 'package:paddy_rice/constants/api.dart';
 import 'package:paddy_rice/widgets/mqtt_client.dart';
-import 'package:paddy_rice/widgets/web_socket_service.dart'; // Assuming you have API constants
+import 'package:paddy_rice/widgets/web_socket_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../widgets/shDialog.dart'; // Assuming you have API constants
 
 class DeviceSateRoute extends StatefulWidget {
   final Device device;
@@ -40,7 +43,10 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
   final TextEditingController _deviceNameController = TextEditingController();
   final TextEditingController _frontTempController = TextEditingController();
   final TextEditingController _backTempController = TextEditingController();
+  final TextEditingController _humidityStartController =
+      TextEditingController();
 
+  List<Device> devices = [];
   bool _isDeviceNameError = false;
   bool _isTempChanged = false;
   bool _isButtonEnabled = false;
@@ -50,6 +56,7 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
   void initState() {
     super.initState();
     fetchTargetValues();
+    _initializeDevices();
     deviceName = widget.device.name;
     _deviceNameController.text = deviceName;
     frontTemperature = widget.device.frontTemp;
@@ -59,22 +66,57 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
     targetBackTemp = widget.device.targetBackTemp ?? 0.0;
     targetHumidity = widget.device.targetHumidity ?? 0.0;
 
-    _mqttService = MQTTService();
     _mqttService.connect().then((_) {
       _mqttService.listenToMessages((message) {
         setState(() {
           Map<String, dynamic> data = jsonDecode(message);
-          frontTemperature =
-              data['front_temperature']?.toDouble() ?? frontTemperature;
-          rearTemperature =
-              data['rear_temperature']?.toDouble() ?? rearTemperature;
-          moisture = data['moisture']?.toDouble() ?? moisture;
+          print('--------------------------------------------------------');
+          print('mqtt server: $data');
+
+          int id = int.tryParse(data['device_id'].toString()) ?? -1;
+          print('MQTT Device ID: $id');
+          double frontTemp = data['front_temp']?.toDouble() ?? 0.0;
+          double backTemp = data['back_temp']?.toDouble() ?? 0.0;
+          double humidity = data['humidity']?.toDouble() ?? 0.0;
+
+          int index = devices.indexWhere((device) {
+            print(
+                'Checking device ID: ${device.id} (Type: ${device.id.runtimeType}) against MQTT ID: $id (Type: ${id.runtimeType})'); // เพิ่ม Log
+            return int.tryParse(device.id) == id;
+          });
+          print('Found Device Index: $index');
+          if (index != -1) {
+            devices[index].frontTemp = frontTemp;
+            devices[index].backTemp = backTemp;
+            devices[index].humidity = humidity;
+            devices[index].status = true;
+
+            double targetFront = devices[index].targetFrontTemp;
+            double targetBack = devices[index].targetBackTemp;
+            double targetHumidity = devices[index].targetHumidity;
+
+            if (frontTemp > targetFront ||
+                backTemp > targetBack ||
+                humidity > targetHumidity) {
+              chackDeviceTargetValues(
+                devices[index].id,
+                devices[index].name,
+                frontTemp,
+                backTemp,
+                humidity,
+              );
+            }
+          }
+
+          print("อัปเดตข้อมูลจาก MQTT");
+          print("Front Temp: $frontTemp");
+          print("Rear Temp: $backTemp");
+          print("Moisture: $humidity");
         });
       });
     }).catchError((error) {
       print('Error connecting to MQTT: $error');
     });
-
     _webSocketService = WebSocketService();
     _webSocketService.connectToDevice(widget.device.id, (data) {
       setState(() {
@@ -108,6 +150,131 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
       }
     } catch (e) {
       print('Error fetching target values: $e');
+    }
+  }
+
+  Future<void> _initializeDevices() async {
+    await _fetchDevices();
+    _setupWebSocketConnections();
+  }
+
+  void _setupWebSocketConnections() {
+    for (var device in devices) {
+      _webSocketService.connectToDevice(
+        device.id,
+        (data) => _handleWebSocketMessage(jsonDecode(data)),
+      );
+    }
+  }
+
+  void _handleWebSocketMessage(Map<String, dynamic> data) {
+    try {
+      final deviceId = data['deviceId'];
+      final devicename = data['device_name'];
+      final frontTemp = data['front_temperature'];
+      final backTemp = data['back_temperature'];
+      final humidity = data['moisture'];
+
+      setState(() {
+        final index = devices.indexWhere((device) => device.id == deviceId);
+        if (index != -1) {
+          devices[index].frontTemp = frontTemp?.toDouble() ?? 0.0;
+          devices[index].backTemp = backTemp?.toDouble() ?? 0.0;
+          devices[index].humidity = humidity?.toDouble() ?? 0.0;
+          devices[index].status == true;
+
+          double targetFrontTemp = devices[index].targetFrontTemp;
+          print("Target Front Temp: $targetFrontTemp");
+          double targetBackTemp = devices[index].targetBackTemp;
+          double targetHumidity = devices[index].targetHumidity;
+
+          if (frontTemp > targetFrontTemp ||
+              backTemp > targetBackTemp ||
+              humidity > targetHumidity) {
+            chackDeviceTargetValues(
+              devices[index].id,
+              devices[index].name,
+              frontTemp,
+              backTemp,
+              humidity,
+            );
+          }
+        }
+      });
+
+      print('Device Front Temperature: $frontTemp');
+      print('Device Rear Temperature: $backTemp');
+      print('Device Moisture: $humidity');
+    } catch (e) {
+      print('Error processing WebSocket message: $e');
+    }
+  }
+
+  Future<void> chackDeviceTargetValues(
+      String deviceId,
+      String deviceName,
+      double targetFrontTemp,
+      double targetBackTemp,
+      double targetHumidity) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}/update-device');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'deviceId': deviceId,
+          'device_name': deviceName,
+          'targetFrontTemp': targetFrontTemp,
+          'targetBackTemp': targetBackTemp,
+          'targetHumidity': targetHumidity,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Device updated successfully');
+      } else {
+        print('Failed to update device: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating device: $e');
+    }
+  }
+
+  Future<int?> _getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('userId');
+  }
+
+  Future<void> _fetchDevices() async {
+    final userId = await _getUserId();
+    if (userId == null) return;
+
+    final url = '${ApiConstants.baseUrl}/user/devices/$userId';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> deviceJson = jsonDecode(response.body);
+        print("Response body: ${response.body}");
+        setState(() {
+          devices = deviceJson.map((json) => Device.fromJson(json)).toList();
+        });
+        for (var device in devices) {
+          double frontTemp = device.frontTemp;
+          double rearTemp = device.backTemp;
+          double moisture = device.humidity;
+
+          print('Device Front Temperature: $frontTemp');
+          print('Device Rear Temperature: $rearTemp');
+          print('Device Moisture: $moisture');
+        }
+      } else {
+        print('Failed to load devices: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching devices: $e');
     }
   }
 
@@ -207,6 +374,151 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
     });
   }
 
+  // void _showDeleteConfirmationDialog(Device device) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         backgroundColor: Colors.transparent,
+  //         title: Text(S.of(context)!.delete_confirmation),
+  //         content: Text(
+  //             'คุณต้องการยกเลิกการเชื่อมต่ออุปกรณ์ "${device.name}" (ID: ${device.id}) หรือไม่?'),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(),
+  //             child: Text(S.of(context)!.cancel),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               _deleteDevice(device.id);
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: Text(S.of(context)!.ok),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  void _showDeleteConfirmationDialog(Device device) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ShDialog(
+          title: S.of(context)!.delete_confirmation,
+          content: S
+              .of(context)!
+              .doYouWantToDisconnectTheDevice(device.name, device.id),
+          parentContext: context,
+          confirmButtonText: S.of(context)!.ok,
+          cancelButtonText: S.of(context)!.cancel,
+          onConfirm: () {
+            _deleteDevice(device.id);
+            Navigator.of(context).pop();
+          },
+          onCancel: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteDevice(String deviceId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final int? userId = prefs.getInt('userId');
+
+    if (userId == null) {
+      print('User ID not found, cannot update device.');
+      return;
+    }
+    print('start delete device process');
+    print('Device ID: $deviceId');
+    print('User ID: $userId');
+    final urlGetSerial = '${ApiConstants.baseUrl}/device/$deviceId/$userId';
+
+    try {
+      final responseGetSerial = await http.get(
+        Uri.parse(urlGetSerial),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (responseGetSerial.statusCode == 200) {
+        print('Get Serial Number Response: ${responseGetSerial.body}');
+
+        try {
+          final Map<String, dynamic> responseData =
+              jsonDecode(responseGetSerial.body);
+          final String? serialNumber = responseData['serialNumber'];
+          if (serialNumber != null) {
+            print('Serial Number from API: $serialNumber');
+            final urlUpdate =
+                '${ApiConstants.baseUrl}/devices/userID/serialNumber/update';
+            final responseUpdate = await http.put(
+              Uri.parse(urlUpdate),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'userId': null,
+                'serialNumber': serialNumber,
+              }),
+            );
+            print(
+                'Update Response: ${responseUpdate.statusCode} - ${responseUpdate.body}');
+            if (responseUpdate.statusCode == 200) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return OkDialog(
+                    title: S.of(context)!.success,
+                    content: S.of(context)!.deviceDisconnect,
+                    parentContext: context,
+                    confirmButtonText: S.of(context)!.ok,
+                    cancelButtonText: '',
+                    onConfirm: () {
+                      Navigator.of(context).pop();
+                      _initializeDevices();
+                      Navigator.of(context).pop(true);
+                    },
+                  );
+                },
+              );
+            } else {
+              print(
+                  'Failed to update device user: ${responseUpdate.statusCode} - ${responseUpdate.body}');
+            }
+          } else {
+            print('Serial Number not found in the get response.');
+          }
+        } catch (e) {
+          print('Error decoding JSON for serial number: $e');
+        }
+      } else if (responseGetSerial.statusCode == 404) {
+        print("Device not found to get serial number.");
+      } else {
+        print(
+            'Failed to get serial number: ${responseGetSerial.statusCode} - ${responseGetSerial.body}');
+      }
+    } catch (e) {
+      print('Error during get serial number request: $e');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return OkDialog(
+            title: 'ข้อผิดพลาด',
+            content: 'เกิดข้อผิดพลาดในการเชื่อมต่อ: $e',
+            parentContext: context,
+            confirmButtonText: 'ตกลง',
+            cancelButtonText: '',
+            onConfirm: () {
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
+    }
+  }
+
   Future<void> showTempDialog(BuildContext context, String tempType) async {
     double targetValue = (tempType == S.of(context)!.temp_front)
         ? targetFrontTemp
@@ -240,11 +552,7 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
                     const SizedBox(height: 8),
                     Text(
                       S.of(context)!.adjust_temp_type(
-                          tempType,
-                          (tempType == 'Humidity')
-                              ? '%'
-                              : '°C' // Unit: '°C' for temperatures, '%' for humidity
-                          ),
+                          tempType, (tempType == 'Humidity') ? '%' : '°C'),
                       style: TextStyle(color: unnecessary_colors),
                     ),
 
@@ -323,6 +631,13 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
             style: appBarFont,
           ),
           centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.delete, color: error_color),
+              onPressed: () => _showDeleteConfirmationDialog(widget.device),
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
         body: Stack(
           children: [
@@ -405,7 +720,7 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
                         ),
                         const SizedBox(height: 24),
                         CustomButton(
-                          text: S.of(context)!.save,
+                          text: S.of(context)!.saveSetting,
                           onPressed: () async {
                             await updateDeviceTargetValues();
                             await fetchTargetValues();
