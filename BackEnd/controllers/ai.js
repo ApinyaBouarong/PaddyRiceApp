@@ -13,13 +13,13 @@ const aiController = {
     const device_id = req.body.deviceId;
 
     try {
-      const query =
-        "INSERT INTO device_readings (start_humidity, device_id) VALUES (?, ?)";
-      const values = [humidity, device_id];
+      // const query =
+      //   "INSERT INTO device_readings (start_humidity, device_id) VALUES (?, ?)";
+      // const values = [humidity, device_id];
 
-      const [results] = await pool.query(query, values);
+      // const [results] = await pool.query(query, values);
 
-      console.log("Data inserted successfully:", results);
+      // console.log("Data inserted successfully:", results);
 
       const payload = JSON.stringify({
         command: "start",

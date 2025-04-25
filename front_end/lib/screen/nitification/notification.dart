@@ -12,6 +12,8 @@ import 'package:paddy_rice/router/routes.gr.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 @RoutePage()
 class NotifiRoute extends StatefulWidget {
@@ -219,9 +221,12 @@ class _NotifiRouteState extends State<NotifiRoute> {
     try {
       final DateTime dateTime =
           DateFormat('dd MMMM', 'en_US').parse(dateString);
-      final locale = Localizations.localeOf(context).toString();
-      final DateFormat formatter = DateFormat('dd MMMM', locale);
-      return formatter.format(dateTime);
+      final String currentLocale = Localizations.localeOf(context).toString();
+
+      return Intl.withLocale(currentLocale, () {
+        final DateFormat formatter = DateFormat('dd MMMM yyyy');
+        return formatter.format(dateTime);
+      });
     } catch (_) {
       return dateString;
     }
@@ -366,15 +371,17 @@ class _NotifiRouteState extends State<NotifiRoute> {
                     fontWeight: FontWeight.bold)),
           ]),
           SizedBox(height: 16),
-          _buildDetailRow('Sensor :', getSensorText(sensorType)),
-          _buildDetailRow('Date :', date),
-          _buildDetailRow('Time :', time),
+          _buildDetailRow(S.of(context)!.sensor_, getSensorText(sensorType)),
+          _buildDetailRow(S.of(context)!.date_, date),
+          _buildDetailRow(S.of(context)!.time_, time),
           if (temperature != null)
-            _buildDetailRow('Current :', '${temperature.toStringAsFixed(1)}°C'),
+            _buildDetailRow(
+                S.of(context)!.current_, '${temperature.toStringAsFixed(1)}°C'),
           if (target_value != null)
-            _buildDetailRow('Target :', '${target_value.toStringAsFixed(1)}°C'),
+            _buildDetailRow(
+                S.of(context)!.target_, '${target_value.toStringAsFixed(1)}°C'),
           Divider(color: Colors.grey[300]),
-          _buildDetailRow('Detail :', message, isDetail: true),
+          _buildDetailRow(S.of(context)!.detail_, message, isDetail: true),
         ],
       ),
     );
@@ -390,8 +397,10 @@ class _NotifiRouteState extends State<NotifiRoute> {
               style: TextStyle(
                   fontSize: 16, color: fontcolor, fontWeight: FontWeight.bold)),
           SizedBox(width: 8),
+          Padding(padding: EdgeInsets.symmetric(horizontal: 16)),
           Expanded(
               child: Text(value,
+                  textAlign: TextAlign.end,
                   style: TextStyle(fontSize: 16, color: fontcolor))),
         ],
       ),

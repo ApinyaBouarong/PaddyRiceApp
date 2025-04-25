@@ -49,6 +49,9 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   bool isDataReceived = false;
   // bool shouldShowNotification = false;
   Map<String, DeviceData> deviceDataMap = {};
+  bool _isConnected = false;
+  String _lastMessage = "ไม่มีข้อมูล";
+  bool _isStopLoading = false;
 
   bool _isDrying = false;
 
@@ -65,7 +68,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     _mqttService = MQTTService();
 
     _initializeDevices();
-
+    _connectAndListen();
     WidgetsBinding.instance.addObserver(this);
 
     _mqttService.connect().then((_) {
@@ -100,6 +103,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
             if (frontTemp > targetFront ||
                 backTemp > targetBack ||
                 humidity > targetHumidity) {
+              print('device name: ${devices[index].name}');
               chackDeviceTargetValues(
                 devices[index].id,
                 devices[index].name,
@@ -122,6 +126,69 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       print('Error connecting to MQTT: $error');
     });
     _startMqttTimeoutTimer();
+  }
+
+  void _connectAndListen() async {
+    bool connected = await _mqttService.ensureConnected();
+
+    if (mounted) {
+      setState(() {
+        _isConnected = connected;
+      });
+    }
+
+    if (connected) {
+      _setupMessageListener();
+    }
+  }
+
+  void _setupMessageListener() {
+    _mqttService.listenToMessages((message) {
+      if (mounted) {
+        setState(() {
+          _lastMessage = message;
+        });
+      }
+    });
+  }
+
+  Future<void> _stopDryingProcess() async {
+    setState(() {
+      _isStopLoading = true;
+    });
+
+    final url = Uri.parse('${ApiConstants.baseUrl}/stop');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      'deviceId': 1,
+    });
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        print('Stop API call successful: ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('หยุดการทำงานสำเร็จ')),
+        );
+      } else {
+        print('Stop API call failed with status: ${response.statusCode}');
+        print('Stop Response body: ${response.body}');
+        // จัดการ response เมื่อหยุดไม่สำเร็จ
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('เกิดข้อผิดพลาดในการหยุด')),
+        );
+      }
+    } catch (error) {
+      print('Error during stop API call: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('เกิดข้อผิดพลาดในการเชื่อมต่อ')),
+      );
+    } finally {
+      setState(() {
+        _isStopLoading = false;
+      });
+    }
   }
 
   void _startMqttTimeoutTimer() {
@@ -205,12 +272,18 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _connectAndListen();
+  }
+
+  @override
   void dispose() {
     _webSocketService.dispose();
     _deviceNameController.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    _mqttService.disconnect();
-    _mqttTimeoutTimer.cancel();
+    // _mqttService.disconnect();
+    // _mqttTimeoutTimer.cancel();
     super.dispose();
   }
 
@@ -266,19 +339,19 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       double targetBackTemp,
       double targetHumidity) async {
     final url = Uri.parse('${ApiConstants.baseUrl}/update-device');
-
     try {
       final response = await http.put(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'deviceId': deviceId,
-          'device_name': deviceName,
+          'deviceName': deviceName,
           'targetFrontTemp': targetFrontTemp,
           'targetBackTemp': targetBackTemp,
           'targetHumidity': targetHumidity,
         }),
       );
+      print('DEVICE NAME: $deviceName');
 
       if (response.statusCode == 200) {
         print('Device updated successfully');
@@ -475,7 +548,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
             builder: (context, notificationState, child) {
               return IconButton(
                 onPressed: () {
-                  // notificationState.hideNotificationDot();
                   context.router.replaceNamed('/notifi');
                 },
                 icon: Stack(
@@ -483,9 +555,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                     Icon(
                       Icons.notifications_outlined,
                       size: 24,
-                      color: notificationState.shouldShowNotification
-                          ? Colors.red
-                          : iconcolor,
+                      color: iconcolor,
                     ),
                     if (notificationState.shouldShowNotification)
                       Positioned(
@@ -552,7 +622,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
           Center(
             child: Column(
               children: [
-                DecoratedImage(),
                 const SizedBox(height: 24),
                 devices.isEmpty
                     ? _buildNoDevices(localizations)
@@ -565,7 +634,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     );
   }
 
-  // No devices UI
+// No devices UI
   Widget _buildNoDevices(S localizations) {
     return Container(
       width: 316,
@@ -604,227 +673,200 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
     );
   }
 
-  // Device list UI
+// Device list UI
   Widget _buildDeviceList(S localizations) {
     return Container(
       width: 316,
-      height: 135,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            for (var device in devices)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Slidable(
-                  key: ValueKey(device),
-                  endActionPane: ActionPane(
-                    motion: const StretchMotion(),
-                    children: [
-                      SlidableAction(
-                        onPressed: (context) async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DeviceSateRoute(device: device),
-                            ),
-                          );
-
-                          if (result == true) {
-                            _initializeDevices();
-                          }
-                        },
-                        backgroundColor: const Color.fromRGBO(247, 145, 19, 1),
-                        foregroundColor: fill_color,
-                        icon: Icons.settings,
-                      ),
-                      SlidableAction(
-                        onPressed: (context) {
-                          setState(() {
-                            _isDrying = !_isDrying;
-                          });
-
-                          if (_isDrying) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const DevicestartRoute()),
-                            );
-                            // อาจมี logic อื่นๆ เมื่อเริ่มอบ
-                          } else {
-                            // logic เมื่อหยุดอบ (ถ้ามี)
-                            // อาจมีการส่งคำสั่งหยุดไปยังอุปกรณ์
-                          }
-                        },
-                        backgroundColor: _isDrying ? Colors.red : startSystem,
-                        foregroundColor: fill_color,
-                        icon: _isDrying ? Icons.stop : Icons.power_settings_new,
-                      ),
-                      // SlidableAction(
-                      //   onPressed: (context) {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(
-                      //           builder: (context) => const DevicestartRoute()),
-                      //     );
-                      //   },
-                      //   backgroundColor: startSystem,
-                      //   foregroundColor: fill_color,
-                      //   icon: Icons.power_settings_new,
-                      // ),
-                      // SlidableAction(
-                      //   onPressed: (context) =>
-                      //       _showDeleteConfirmationDialog(device),
-                      //   backgroundColor: const Color.fromRGBO(237, 76, 47, 1),
-                      //   foregroundColor: fill_color,
-                      //   icon: Icons.delete,
-                      // ),
-                    ],
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: fill_color,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border(
-                        left: BorderSide(
-                          color: _getDeviceStatusColor(device.status),
-                          width: 8,
+      child: ListView.builder(
+        itemCount: devices.length,
+        shrinkWrap: true,
+        itemBuilder: (context, index) {
+          final device = devices[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Slidable(
+              key: ValueKey(device),
+              endActionPane: ActionPane(
+                motion: const StretchMotion(),
+                children: [
+                  SlidableAction(
+                    onPressed: (context) async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DeviceSateRoute(device: device),
                         ),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 4),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  device.name.length > 21
-                                      ? '${device.name.substring(0, 21)}...'
-                                      : device.name,
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: fontcolor),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: _getDeviceStatusColor(device.status),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  device.status
-                                      ? localizations.running
-                                      : localizations.close,
-                                  style: TextStyle(
-                                    color: fill_color,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.thermostat_outlined,
-                                      size: 24,
-                                      color: frontTemp,
-                                    ),
-                                    Text(
-                                      S.of(context)!.temp_front,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: unnecessary_colors),
-                                    ),
-                                    Text(
-                                      '${device.frontTemp.toStringAsFixed(1)} °C',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: frontTemp),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.thermostat_outlined,
-                                      size: 24,
-                                      color: backTemp,
-                                    ),
-                                    Text(
-                                      S.of(context)!.temp_back,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: unnecessary_colors),
-                                    ),
-                                    Text(
-                                      '${device.backTemp.toStringAsFixed(1)} °C',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: backTemp),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.water_drop_outlined,
-                                      size: 24,
-                                      color: humidity,
-                                    ),
-                                    Text(
-                                      S.of(context)!.humidity_,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: unnecessary_colors),
-                                    ),
-                                    Text(
-                                      '${device.humidity.toStringAsFixed(2)} %',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: humidity),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      );
+
+                      if (result == true) {
+                        _initializeDevices();
+                      }
+                    },
+                    backgroundColor: const Color.fromRGBO(247, 145, 19, 1),
+                    foregroundColor: fill_color,
+                    icon: Icons.settings,
+                  ),
+                  SlidableAction(
+                    onPressed: (context) {
+                      setState(() {
+                        _isDrying = !_isDrying;
+                      });
+
+                      if (!_isDrying) {
+                        _stopDryingProcess();
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const DevicestartRoute()),
+                        );
+                      }
+                    },
+                    backgroundColor: _isDrying ? Colors.red : startSystem,
+                    foregroundColor: fill_color,
+                    icon: _isDrying ? Icons.stop : Icons.power_settings_new,
+                  ),
+                ],
+              ),
+              child: Container(
+                width: double.infinity,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: fill_color,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border(
+                    left: BorderSide(
+                      color: _getDeviceStatusColor(device.status),
+                      width: 8,
                     ),
                   ),
                 ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              device.name.length > 21
+                                  ? '${device.name.substring(0, 21)}...'
+                                  : device.name,
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: fontcolor),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _getDeviceStatusColor(device.status),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              device.status
+                                  ? localizations.running
+                                  : localizations.close,
+                              style: TextStyle(
+                                color: fill_color,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.thermostat_outlined,
+                                  size: 24,
+                                  color: frontTemp,
+                                ),
+                                Text(
+                                  localizations.temp_front,
+                                  style: TextStyle(
+                                      fontSize: 12, color: unnecessary_colors),
+                                ),
+                                Text(
+                                  '${device.frontTemp.toStringAsFixed(1)} °C',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: frontTemp),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.thermostat_outlined,
+                                  size: 24,
+                                  color: backTemp,
+                                ),
+                                Text(
+                                  localizations.temp_back,
+                                  style: TextStyle(
+                                      fontSize: 12, color: unnecessary_colors),
+                                ),
+                                Text(
+                                  '${device.backTemp.toStringAsFixed(1)} °C',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: backTemp),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.water_drop_outlined,
+                                  size: 24,
+                                  color: humidity,
+                                ),
+                                Text(
+                                  localizations.humidity_,
+                                  style: TextStyle(
+                                      fontSize: 12, color: unnecessary_colors),
+                                ),
+                                Text(
+                                  '${device.humidity.toStringAsFixed(2)} %',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: humidity),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }

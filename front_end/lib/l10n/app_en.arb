@@ -211,5 +211,11 @@
   "pleaseEnterInitialHumidity": "Please enter Initial humidity",
   "humidityData": "Humidity Data",
   "humidityDataDetail": "The initial moisture content of rice should be between 14-30% for best drying efficiency.",
-  "startBakingRice": "Start Baking Rice"
+  "startBakingRice": "Start Baking Rice",
+  "sensor_": "Sensor :",
+  "date_": "Date :",
+  "time_": "Time :",
+  "current_": "Current :",
+  "target_": "Target :",
+  "detail_": "Detail :"
 }

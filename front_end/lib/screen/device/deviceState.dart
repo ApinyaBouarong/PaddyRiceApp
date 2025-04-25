@@ -57,6 +57,7 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
     super.initState();
     fetchTargetValues();
     _initializeDevices();
+    _mqttService = MQTTService();
     deviceName = widget.device.name;
     _deviceNameController.text = deviceName;
     frontTemperature = widget.device.frontTemp;
@@ -73,45 +74,57 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
           print('--------------------------------------------------------');
           print('mqtt server: $data');
 
-          int id = int.tryParse(data['device_id'].toString()) ?? -1;
-          print('MQTT Device ID: $id');
-          double frontTemp = data['front_temp']?.toDouble() ?? 0.0;
-          double backTemp = data['back_temp']?.toDouble() ?? 0.0;
-          double humidity = data['humidity']?.toDouble() ?? 0.0;
+          int mqttDeviceId = int.tryParse(data['device_id'].toString()) ?? -1;
+          int currentDeviceId =
+              int.tryParse(widget.device.id) ?? -1; // Get current device ID
 
-          int index = devices.indexWhere((device) {
-            print(
-                'Checking device ID: ${device.id} (Type: ${device.id.runtimeType}) against MQTT ID: $id (Type: ${id.runtimeType})'); // เพิ่ม Log
-            return int.tryParse(device.id) == id;
-          });
-          print('Found Device Index: $index');
-          if (index != -1) {
-            devices[index].frontTemp = frontTemp;
-            devices[index].backTemp = backTemp;
-            devices[index].humidity = humidity;
-            devices[index].status = true;
+          print('MQTT Device ID: $mqttDeviceId');
+          print('Current Screen Device ID: $currentDeviceId');
 
-            double targetFront = devices[index].targetFrontTemp;
-            double targetBack = devices[index].targetBackTemp;
-            double targetHumidity = devices[index].targetHumidity;
+          // Check if the MQTT message is for the current device
+          if (mqttDeviceId == currentDeviceId) {
+            double frontTemp = data['front_temp']?.toDouble() ?? 0.0;
+            double backTemp = data['back_temp']?.toDouble() ?? 0.0;
+            double humidity = data['humidity']?.toDouble() ?? 0.0;
 
-            if (frontTemp > targetFront ||
-                backTemp > targetBack ||
-                humidity > targetHumidity) {
-              chackDeviceTargetValues(
-                devices[index].id,
-                devices[index].name,
-                frontTemp,
-                backTemp,
-                humidity,
-              );
+            frontTemperature = frontTemp;
+            rearTemperature = backTemp;
+            moisture = humidity;
+
+            // อัปเดต target values ใน devices list ด้วย (ถ้าต้องการให้ list นี้อัปเดตด้วย)
+            int index = devices.indexWhere(
+                (device) => int.tryParse(device.id) == currentDeviceId);
+            if (index != -1) {
+              devices[index].frontTemp = frontTemp;
+              devices[index].backTemp = backTemp;
+              devices[index].humidity = humidity;
+              devices[index].status = true;
+
+              double targetFront = devices[index].targetFrontTemp;
+              double targetBack = devices[index].targetBackTemp;
+              double targetHumidity = devices[index].targetHumidity;
+
+              if (frontTemp > targetFront ||
+                  backTemp > targetBack ||
+                  humidity > targetHumidity) {
+                chackDeviceTargetValues(
+                  devices[index].id,
+                  devices[index].name,
+                  frontTemp,
+                  backTemp,
+                  humidity,
+                );
+              }
             }
-          }
 
-          print("อัปเดตข้อมูลจาก MQTT");
-          print("Front Temp: $frontTemp");
-          print("Rear Temp: $backTemp");
-          print("Moisture: $humidity");
+            print("อัปเดตข้อมูลจาก MQTT สำหรับ Device ID: $currentDeviceId");
+            print("Front Temp: $frontTemp");
+            print("Rear Temp: $backTemp");
+            print("Moisture: $humidity");
+          } else {
+            print(
+                "ข้อมูล MQTT (Device ID: $mqttDeviceId) ไม่ตรงกับ Device ID ปัจจุบัน: $currentDeviceId");
+          }
         });
       });
     }).catchError((error) {

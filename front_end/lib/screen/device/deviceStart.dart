@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:paddy_rice/constants/api.dart';
 import 'package:paddy_rice/constants/color.dart';
 import 'package:paddy_rice/constants/font_size.dart';
 import 'package:paddy_rice/widgets/CustomButton.dart';
 import 'package:paddy_rice/widgets/decorated_image.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import สำหรับ S
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DevicestartRoute extends StatefulWidget {
   const DevicestartRoute({super.key});
@@ -16,6 +20,36 @@ class _DevicestartRouteState extends State<DevicestartRoute> {
   final TextEditingController _initialHumidityController =
       TextEditingController();
   bool _isInitialHumidityError = false;
+  bool _isLoading = false;
+
+  Future<void> _startBakingProcess() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url = Uri.parse('${ApiConstants.baseUrl}/start');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode(
+        {'humidity': _initialHumidityController.text, 'deviceId': 1});
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        print('API call successful: ${response.body}');
+        Navigator.of(context).pop();
+      } else {
+        print('API call failed with status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (error) {
+      print('Error during API call: $error');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +102,7 @@ class _DevicestartRouteState extends State<DevicestartRoute> {
                     if (_initialHumidityController.text.isNotEmpty) {
                       print(
                           "ค่าความชื้นเริ่มต้น: ${_initialHumidityController.text}");
+                      await _startBakingProcess();
                     } else {
                       setState(() {
                         _isInitialHumidityError = true;

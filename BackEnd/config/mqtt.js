@@ -3,7 +3,7 @@ const pool = require("./db");
 const admin = require("./firebase");
 const { wss } = require("../app");
 
-const mqttHost = "mqtt://192.168.0.106";
+const mqttHost = "mqtt://192.168.0.103";
 const mqttPort = 1883;
 const mqttTopic = "sensor/data";
 
