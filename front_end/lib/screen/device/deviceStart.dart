@@ -10,7 +10,9 @@ import 'package:paddy_rice/widgets/decorated_image.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DevicestartRoute extends StatefulWidget {
-  const DevicestartRoute({super.key});
+  const DevicestartRoute({Key? key, required this.deviceId}) : super(key: key);
+
+  final int deviceId;
 
   @override
   State<DevicestartRoute> createState() => _DevicestartRouteState();
@@ -29,8 +31,10 @@ class _DevicestartRouteState extends State<DevicestartRoute> {
 
     final url = Uri.parse('${ApiConstants.baseUrl}/start');
     final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode(
-        {'humidity': _initialHumidityController.text, 'deviceId': 1});
+    final body = jsonEncode({
+      'humidity': _initialHumidityController.text,
+      'deviceId': widget.deviceId
+    });
 
     try {
       final response = await http.post(url, headers: headers, body: body);
