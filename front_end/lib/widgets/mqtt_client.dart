@@ -9,11 +9,11 @@ class MQTTService {
 
   MqttServerClient? _client;
 
-  final String broker = '192.168.186.94';
+  final String broker = '192.168.33.87';
   final int port = 1883;
   final String clientId = 'flutter_mqtt_client';
-  final String tempDataTopic = 'sensor/data'; // Topic for temperature data
-  final String humidityDataTopic = 'sensor/ai'; // Topic for humidity data
+  final String tempDataTopic = 'sensor/data';
+  final String humidityDataTopic = 'sensor/ai';
   final String? username = 'mymqtt';
   final String? password = 'paddy';
 

@@ -85,9 +85,17 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
             double backTemp = data['back_temp']?.toDouble() ?? 0.0;
             double humidity = data['humidity']?.toDouble() ?? 0.0;
 
+            DateTime sentTimestamp =
+                DateTime.tryParse(data['timestamp'] ?? '') ?? DateTime.now();
+            DateTime receivedTimestamp = DateTime.now();
+
+            // คำนวณ delay (หน่วย: มิลลิวินาที)
+            int delayMs =
+                receivedTimestamp.difference(sentTimestamp).inMilliseconds;
+
             int index = devices.indexWhere((device) {
               print(
-                  'Checking device ID: ${device.id} (Type: ${device.id.runtimeType}) against MQTT ID: $id (Type: ${id.runtimeType})'); // เพิ่ม Log
+                  'Checking device ID: ${device.id} (Type: ${device.id.runtimeType}) against MQTT ID: $id (Type: ${id.runtimeType})');
               return int.tryParse(device.id) == id;
             });
             print('Found Device Index: $index');
@@ -117,10 +125,13 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
 
             isDataReceived = true;
             _resetMqttTimeoutTimer();
-            print("อัปเดตข้อมูลจาก MQTT");
+            print("MQTT Device ID: $id");
             print("Front Temp: $frontTemp");
             print("Rear Temp: $backTemp");
-            print("Moisture: $humidity");
+            print("Humidity: $humidity");
+            print("Sent Time: $sentTimestamp");
+            print("Received Time: $receivedTimestamp");
+            print("Delay: $delayMs ms");
           } catch (e) {
             print('Error processing MQTT message: $e');
           }
@@ -154,45 +165,6 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
         });
       }
     });
-  }
-
-  Future<void> _stopDryingProcess(int deviceId) async {
-    setState(() {
-      _isStopLoading = true;
-    });
-
-    final url = Uri.parse('${ApiConstants.baseUrl}/stop');
-    final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode({
-      'deviceId': deviceId,
-    });
-
-    try {
-      final response = await http.post(url, headers: headers, body: body);
-
-      if (response.statusCode == 200) {
-        print('Stop API call successful: ${response.body}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('หยุดการทำงานสำเร็จ')),
-        );
-      } else {
-        print('Stop API call failed with status: ${response.statusCode}');
-        print('Stop Response body: ${response.body}');
-        // จัดการ response เมื่อหยุดไม่สำเร็จ
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('เกิดข้อผิดพลาดในการหยุด')),
-        );
-      }
-    } catch (error) {
-      print('Error during stop API call: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('เกิดข้อผิดพลาดในการเชื่อมต่อ')),
-      );
-    } finally {
-      setState(() {
-        _isStopLoading = false;
-      });
-    }
   }
 
   void _startMqttTimeoutTimer() {
@@ -240,13 +212,18 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       final backTemp = data['back_temperature'];
       final humidity = data['moisture'];
 
+      // บันทึกเวลาและคำนวณ delay
+      DateTime receivedTimestamp = DateTime.now();
+      double delay =
+          DateTime.now().difference(receivedTimestamp).inMilliseconds / 1000.0;
+
       setState(() {
         final index = devices.indexWhere((device) => device.id == deviceId);
         if (index != -1) {
           devices[index].frontTemp = frontTemp?.toDouble() ?? 0.0;
           devices[index].backTemp = backTemp?.toDouble() ?? 0.0;
           devices[index].humidity = humidity?.toDouble() ?? 0.0;
-          devices[index].status == true;
+          devices[index].status = true;
 
           double targetFrontTemp = devices[index].targetFrontTemp;
           print("Target Front Temp: $targetFrontTemp");
@@ -270,6 +247,8 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
       print('Device Front Temperature: $frontTemp');
       print('Device Rear Temperature: $backTemp');
       print('Device Moisture: $humidity');
+      print("Timestamp: $receivedTimestamp");
+      print("Delay: $delay seconds");
     } catch (e) {
       print('Error processing WebSocket message: $e');
     }
@@ -334,6 +313,123 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
               _deviceNameController.text != widget.key.toString()) ||
           _isTempChanged;
     });
+  }
+
+  void _showDeleteConfirmationDialog(Device device) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ShDialog(
+          title: S.of(context)!.delete_confirmation,
+          content: S
+              .of(context)!
+              .doYouWantToDisconnectTheDevice(device.name, device.id),
+          parentContext: context,
+          confirmButtonText: S.of(context)!.ok,
+          cancelButtonText: S.of(context)!.cancel,
+          onConfirm: () async {
+            Navigator.of(context).pop(); // ปิด ShDialog
+
+            final success = await _deleteDevice(device.id);
+
+            if (success) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return OkDialog(
+                    title: S.of(context)!.success,
+                    content: S.of(context)!.deviceDisconnect,
+                    parentContext: context,
+                    confirmButtonText: S.of(context)!.ok,
+                    cancelButtonText: '',
+                    onConfirm: () {
+                      Navigator.of(context).pop(); // ปิด OkDialog
+                      _initializeDevices(); // โหลดรายการอุปกรณ์ใหม่
+                      // Navigator.of(context)
+                      //     .pop(true);
+                    },
+                  );
+                },
+              );
+            } else {
+              // แสดง Dialog แจ้งล้มเหลว
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return OkDialog(
+                    title: S.of(context)!.error,
+                    content: S.of(context)!.failedToDeleteDevice,
+                    parentContext: context,
+                    confirmButtonText: S.of(context)!.ok,
+                    cancelButtonText: '',
+                    onConfirm: () {
+                      // Navigator.of(context).pop();
+                    },
+                  );
+                },
+              );
+            }
+          },
+          onCancel: () {
+            // Navigator.of(context).pop(); // ปิด ShDialog
+          },
+        );
+      },
+    );
+  }
+
+  Future<bool> _deleteDevice(String deviceId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final int? userId = prefs.getInt('userId');
+
+    if (userId == null) {
+      print('User ID not found, cannot update device.');
+      return false;
+    }
+
+    final urlGetSerial = '${ApiConstants.baseUrl}/device/$deviceId/$userId';
+
+    try {
+      final responseGetSerial = await http.get(
+        Uri.parse(urlGetSerial),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (responseGetSerial.statusCode == 200) {
+        final Map<String, dynamic> responseData =
+            jsonDecode(responseGetSerial.body);
+        final String? serialNumber = responseData['serialNumber'];
+
+        if (serialNumber != null) {
+          final urlUpdate =
+              '${ApiConstants.baseUrl}/devices/userID/serialNumber/update';
+          final responseUpdate = await http.put(
+            Uri.parse(urlUpdate),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'userId': null,
+              'serialNumber': serialNumber,
+            }),
+          );
+
+          if (responseUpdate.statusCode == 200) {
+            return true;
+          } else {
+            print('Failed to update device user: ${responseUpdate.statusCode}');
+            return false;
+          }
+        } else {
+          print('Serial number not found in response.');
+          return false;
+        }
+      } else {
+        print('Failed to get serial number: ${responseGetSerial.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error during delete process: $e');
+      return false;
+    }
   }
 
   Future<void> chackDeviceTargetValues(
@@ -591,25 +687,34 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                   ),
                   SlidableAction(
                     onPressed: (context) {
-                      setState(() {
-                        _isDrying = !_isDrying;
-                      });
-
-                      if (!_isDrying) {
-                        _stopDryingProcess(int.parse(device.id));
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => DevicestartRoute(
-                                  deviceId: int.parse(device.id))),
-                        );
-                      }
+                      _showDeleteConfirmationDialog(device);
                     },
-                    backgroundColor: _isDrying ? Colors.red : startSystem,
+                    backgroundColor: error_color,
                     foregroundColor: fill_color,
-                    icon: _isDrying ? Icons.stop : Icons.power_settings_new,
+                    icon: Icons.delete,
                   ),
+
+                  // SlidableAction(
+                  //   onPressed: (context) {
+                  //     setState(() {
+                  //       _isDrying = !_isDrying;
+                  //     });
+
+                  //     if (!_isDrying) {
+                  //       _stopDryingProcess(int.parse(device.id));
+                  //     } else {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //             builder: (context) => DevicestartRoute(
+                  //                 deviceId: int.parse(device.id))),
+                  //       );
+                  //     }
+                  //   },
+                  //   backgroundColor: _isDrying ? Colors.red : startSystem,
+                  //   foregroundColor: fill_color,
+                  //   icon: _isDrying ? Icons.stop : Icons.power_settings_new,
+                  // ),
                 ],
               ),
               child: Container(

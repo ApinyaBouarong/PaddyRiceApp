@@ -217,5 +217,6 @@
   "time_": "Time :",
   "current_": "Current :",
   "target_": "Target :",
-  "detail_": "Detail :"
+  "detail_": "Detail :",
+  "failedToDeleteDevice": "Failed to delete device"
 }

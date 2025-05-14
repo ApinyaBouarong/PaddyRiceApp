@@ -644,13 +644,6 @@ class _DeviceSateRouteState extends State<DeviceSateRoute> {
             style: appBarFont,
           ),
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.delete, color: error_color),
-              onPressed: () => _showDeleteConfirmationDialog(widget.device),
-            ),
-            const SizedBox(width: 8),
-          ],
         ),
         body: Stack(
           children: [

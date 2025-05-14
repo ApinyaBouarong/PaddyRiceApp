@@ -73,6 +73,7 @@ const deviceController = {
 
   getTargetValues: async (req, res) => {
     const deviceId = req.params.deviceId;
+    console.log("Start Get Target Values");
     try {
       const [rows] = await pool.query(
         "SELECT device_name, target_front_temp, target_back_temp, target_humidity FROM devices WHERE device_id = ?",
@@ -151,11 +152,9 @@ const deviceController = {
       if (result.length > 0) {
         return res.status(200).json({ serialNumber: result[0].serial_number });
       } else {
-        return res
-          .status(404)
-          .json({
-            message: "Device not found for the given User ID and Device ID",
-          });
+        return res.status(404).json({
+          message: "Device not found for the given User ID and Device ID",
+        });
       }
     } catch (error) {
       console.error("Error getting serial number:", error);
