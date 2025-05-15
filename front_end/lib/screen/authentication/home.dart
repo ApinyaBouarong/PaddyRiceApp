@@ -371,7 +371,7 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
             }
           },
           onCancel: () {
-            // Navigator.of(context).pop(); // ปิด ShDialog
+            Navigator.of(context).pop();
           },
         );
       },
@@ -654,11 +654,12 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
 
 // Device list UI
   Widget _buildDeviceList(S localizations) {
-    return Container(
+    return SizedBox(
       width: 316,
       child: ListView.builder(
         itemCount: devices.length,
         shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
         itemBuilder: (context, index) {
           final device = devices[index];
           return Padding(
@@ -693,33 +694,11 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                     foregroundColor: fill_color,
                     icon: Icons.delete,
                   ),
-
-                  // SlidableAction(
-                  //   onPressed: (context) {
-                  //     setState(() {
-                  //       _isDrying = !_isDrying;
-                  //     });
-
-                  //     if (!_isDrying) {
-                  //       _stopDryingProcess(int.parse(device.id));
-                  //     } else {
-                  //       Navigator.push(
-                  //         context,
-                  //         MaterialPageRoute(
-                  //             builder: (context) => DevicestartRoute(
-                  //                 deviceId: int.parse(device.id))),
-                  //       );
-                  //     }
-                  //   },
-                  //   backgroundColor: _isDrying ? Colors.red : startSystem,
-                  //   foregroundColor: fill_color,
-                  //   icon: _isDrying ? Icons.stop : Icons.power_settings_new,
-                  // ),
                 ],
               ),
               child: Container(
                 width: double.infinity,
-                height: 120,
+                height: 136,
                 decoration: BoxDecoration(
                   color: fill_color,
                   borderRadius: BorderRadius.circular(8),
@@ -764,90 +743,95 @@ class _HomeRouteState extends State<HomeRoute> with WidgetsBindingObserver {
                                   ? localizations.running
                                   : localizations.close,
                               style: TextStyle(
-                                color: fill_color,
-                                fontWeight: FontWeight.bold,
-                              ),
+                                  color: fill_color,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.thermostat_outlined,
-                                  size: 24,
-                                  color: frontTemp,
-                                ),
-                                Text(
-                                  localizations.temp_front,
-                                  style: TextStyle(
-                                      fontSize: 12, color: unnecessary_colors),
-                                ),
-                                Text(
-                                  '${device.frontTemp.toStringAsFixed(1)} °C',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: frontTemp),
-                                ),
-                              ],
+                      IntrinsicHeight(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.thermostat_outlined,
+                                    size: 24,
+                                    color: frontTemp,
+                                  ),
+                                  Text(
+                                    '${device.frontTemp.toStringAsFixed(1)} °C',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: frontTemp),
+                                  ),
+                                  Text(
+                                    localizations.temp_front,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: unnecessary_colors),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.thermostat_outlined,
-                                  size: 24,
-                                  color: backTemp,
-                                ),
-                                Text(
-                                  localizations.temp_back,
-                                  style: TextStyle(
-                                      fontSize: 12, color: unnecessary_colors),
-                                ),
-                                Text(
-                                  '${device.backTemp.toStringAsFixed(1)} °C',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: backTemp),
-                                ),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.thermostat_outlined,
+                                    size: 24,
+                                    color: backTemp,
+                                  ),
+                                  Text(
+                                    '${device.backTemp.toStringAsFixed(1)} °C',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: backTemp),
+                                  ),
+                                  Text(
+                                    localizations.temp_back,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: unnecessary_colors),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.water_drop_outlined,
-                                  size: 24,
-                                  color: humidity,
-                                ),
-                                Text(
-                                  localizations.humidity_,
-                                  style: TextStyle(
-                                      fontSize: 12, color: unnecessary_colors),
-                                ),
-                                Text(
-                                  '${device.humidity.toStringAsFixed(2)} %',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: humidity),
-                                ),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.water_drop_outlined,
+                                    size: 24,
+                                    color: humidity,
+                                  ),
+                                  Text(
+                                    '${device.humidity.toStringAsFixed(2)} %',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: humidity),
+                                  ),
+                                  Text(
+                                    localizations.humidity_,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: unnecessary_colors),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),

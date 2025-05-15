@@ -157,25 +157,31 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
     });
     final serialNumber = _serialNumberController.text.trim();
     print('Serial Number: $serialNumber');
-    if (serialNumber.isNotEmpty) {
-      final deviceInfo = await _checkSerialExists(serialNumber);
-      if (deviceInfo != null) {
-        if (deviceInfo['user_id'] == null) {
-          final userId = await _fetchUserId();
-          if (userId != null) {
-            await _assignUserToDevice(serialNumber, userId);
-          } else {
-            _showErrorSnackBar('User ID not found. Please login again.');
-          }
-        } else {
-          _showDeviceAlreadyAssignedDialog(context);
-        }
-      } else {
-        _showErrorSnackBar('Serial number not found.');
-      }
-    } else {
+    if (serialNumber.isEmpty) {
       setState(() {
         _errorMessage = S.of(context)!.pleaseEnterSerialNumber;
+      });
+      return;
+    }
+
+    final deviceInfo = await _checkSerialExists(serialNumber);
+    if (deviceInfo != null) {
+      if (deviceInfo['user_id'] == null) {
+        final userId = await _fetchUserId();
+        if (userId != null) {
+          await _assignUserToDevice(serialNumber, userId);
+        } else {
+          _showErrorSnackBar('User ID not found. Please login again.');
+        }
+      } else {
+        setState(() {
+          _errorMessage = S.of(context)!.serialAlreadyUsed;
+        });
+      }
+    } else {
+      // Serial not found or invalid
+      setState(() {
+        _errorMessage = S.of(context)!.serialInvalid;
       });
     }
   }
@@ -215,6 +221,20 @@ class _AddSerialRouteState extends State<AddSerialRoute> {
                     errorMessage: _errorMessage ?? "",
                     onSuffixIconPressed: () {
                       context.router.replaceNamed('/scan');
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return S.of(context)!.pleaseEnterSerialNumber;
+                      }
+
+                      return null;
+                    },
+                    onChanged: (value) {
+                      if (_errorMessage != null) {
+                        setState(() {
+                          _errorMessage = null;
+                        });
+                      }
                     },
                   ),
                   const SizedBox(height: 8),

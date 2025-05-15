@@ -197,7 +197,7 @@ class _ScanRouteState extends State<ScanRoute> {
       setState(() {
         result = scanData;
         if (result?.code != null) {
-          controller.pauseCamera(); // หยุดการสแกนเมื่อเจอ QR Code แล้ว
+          controller.pauseCamera();
           _handleScannedValue(result!.code!);
         }
       });
@@ -209,9 +209,6 @@ class _ScanRouteState extends State<ScanRoute> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       print('Selected image path: ${image.path}');
-      // You might need a plugin to decode QR codes from images.
-      // Consider using 'qr_code_scanner_plus' with image decoding capabilities
-      // or another plugin like 'image_cropper' and 'scan'.
     }
   }
 
@@ -290,7 +287,7 @@ class _ScanRouteState extends State<ScanRoute> {
                       ),
                     ),
                   ),
-                  if (_isLoading) // แสดง CircularProgressIndicator เมื่อกำลังโหลด
+                  if (_isLoading)
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
                       child: CircularProgressIndicator(

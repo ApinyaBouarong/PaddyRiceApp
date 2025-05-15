@@ -42,21 +42,26 @@ const profileController = {
 
   updateProfile: async (req, res) => {
     const userId = req.params.userId;
-    const { name, surname, email, phone } = req.body;
-    if (!name || !surname || !email || !phone) {
+    const { name, surname, email, phone_number } = req.body;
+    console.log("Update profile:", userId, name, surname, email, phone_number);
+    if (!name || !surname || !email || !phone_number) {
       return res.status(400).json({ message: "All fields are required" });
     }
     try {
       const [result] = await pool.query(
         "UPDATE users SET name = ?, surname = ?, email = ?, phone_number = ? WHERE user_id = ?",
-        [name, surname, email, phone, userId]
+        [name, surname, email, phone_number, userId]
       );
+      console.log("Update result:", result);
       if (result.affectedRows === 0) {
         return res
           .status(404)
           .json({ message: "User not found or no changes made" });
       }
-      res.status(200).json({ message: "Profile updated successfully" });
+      if (res.statusCode === 200) {
+        console.log("Profile updated successfully");
+        res.status(200).json({ message: "Profile updated successfully" });
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ message: "Server error" });

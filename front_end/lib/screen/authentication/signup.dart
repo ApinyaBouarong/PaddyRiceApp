@@ -188,6 +188,7 @@ class _SignupRouteState extends State<SignupRoute> {
 
   final phoneRegex = RegExp(r'^[0-9]{10}$');
   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+  final nameRegex = RegExp(r'^[a-zA-Z\u0E00-\u0E7F\s]+$');
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +238,12 @@ class _SignupRouteState extends State<SignupRoute> {
                     if (value == null || value.isEmpty) {
                       return S.of(context)!.name_error;
                     }
+                    if (!nameRegex.hasMatch(value)) {
+                      setState(() {
+                        _isNameError = true;
+                      });
+                      return S.of(context)!.name_invalid_error;
+                    }
                     setState(() {
                       _isNameError = false;
                     });
@@ -258,6 +265,18 @@ class _SignupRouteState extends State<SignupRoute> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return S.of(context)!.surname_error;
+                    }
+                    if (!nameRegex.hasMatch(value)) {
+                      setState(() {
+                        _isSurnameError = true;
+                      });
+                      return S.of(context)!.surname_invalid_error;
+                    }
+                    if (!nameRegex.hasMatch(value)) {
+                      setState(() {
+                        _isSurnameError = true;
+                      });
+                      return S.of(context)!.surname_invalid_error;
                     }
                     setState(() {
                       _isSurnameError = false;

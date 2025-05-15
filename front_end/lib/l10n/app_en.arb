@@ -27,7 +27,7 @@
 
   "forgot_password": "Forgot Password",
   "user_not_found": "User not found",
-  "user_not_found_prompt": "User not found. Would you like to sign up or enter a different email?",
+  "user_not_found_prompt": "User not found. Please verify your information and try again.",
   "enter_email_verification": "Please Enter Your Email To Receive a Verification Code",
   "email": "Email",
   "field_required": "This field is required",
@@ -93,14 +93,16 @@
   "password": "Password",
   "confirm_password": "Confirm Password",
   "sign_up": "Sign up",
-  "name_error": "Name must be at least 2 characters long",
-  "surname_error": "Surname must be at least 2 characters long",
-  "phone_error": "Phone number must be 10 digits",
+  "name_invalid_error": "Name must contain only letters and spaces.",
+  "surname_invalid_error": "Surname must contain only letters and spaces.",
+  "name_error": "Name must contain at least 2 characters.",
+  "surname_error": "Surname must contain at least 2 characters.",
+  "phone_error": "The phone number is invalid. Please re-enter it.",
   "email_error": "Invalid email format",
-  "password_error": "Passwords do not match",
+  "password_error": "The passwords do not match. Please verify and try again",
   "success_message": "Registration successful. Please log in.",
   "error_message": "Error occurred",
-  "email_phone_exists": "Email or phone number already exists",
+  "email_phone_exists": "This email or phone number is now active.",
 
   "error": "Error",
   "success": "Success",
@@ -165,8 +167,8 @@
   "profile_update_failed": "Failed to update profile",
 
   "change_password": "Change Password",
-  "password_changed": "Password Changed",
-  "password_changed_success": "Your password has been changed successfully",
+  "password_changed": "Password changed successfully",
+  "password_changed_success": "You’ll need to use your new password the next time you sign in.",
   
   "current_password": "Current Password",
   "new_password": "New Password",
@@ -205,7 +207,7 @@
   "addSerialNumber": "Add Serial Number",
   "enterDeviceSerialNumber": "Enter device serial number",
   "pleaseEnterSerialNumber": "Please enter serial number",
-  "addSerialNumberSuccess": "Add serial number success",
+  "addSerialNumberSuccess": "Device added successfully.",
   "bakeRice": "Bake Rice",
   "initialHumidity": "Initial Humidity",
   "pleaseEnterInitialHumidity": "Please enter Initial humidity",
@@ -218,5 +220,7 @@
   "current_": "Current :",
   "target_": "Target :",
   "detail_": "Detail :",
-  "failedToDeleteDevice": "Failed to delete device"
+  "failedToDeleteDevice": "Failed to delete device",
+  "serialInvalid": "Invalid serial number.",
+  "serialAlreadyUsed": "This serial number has already been used."
 }

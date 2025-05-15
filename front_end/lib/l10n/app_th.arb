@@ -27,7 +27,7 @@
 
   "forgot_password": "ลืมรหัสผ่าน",
   "user_not_found": "ไม่พบผู้ใช้",
-  "user_not_found_prompt": "ไม่พบผู้ใช้นี้ คุณต้องการสมัครสมาชิกหรือป้อนอีเมลใหม่หรือไม่?",
+  "user_not_found_prompt": "ไม่พบข้อมูลผู้ใช้ กรุณาตรวจสอบอีกครั้ง",
   "sign_up": "สมัครสมาชิก",
   "enter_email_verification": "กรุณากรอกอีเมลของคุณเพื่อรับรหัสยืนยัน",
   "email": "อีเมล",
@@ -70,9 +70,9 @@
   "no_qr_code": "ไม่มีรหัส QR",
 
   "notification": "การแจ้งเตือน",
-  "temp_back": "อุณภูมิ (ด้านหลัง)",
+  "temp_back": "อุณหภูมิ\n(ด้านหลัง)",
   "temp_exceeds": "อุณหภูมิเกิน",
-  "temp_front": "อุณภูมิ (ด้านหลัง)",
+  "temp_front": "อุณหภูมิ\n(ด้านหลัง)",
   "humidity": "ความชื้น",
   "Monitoring for potential dryness.": "ตรวจสอบระดับความแห้ง",
   "no_notifications": "ไม่มีการแจ้งเตือน",
@@ -93,14 +93,16 @@
   "email": "อีเมล",
   "password": "รหัสผ่าน",
   "confirm_password": "ยืนยันรหัสผ่าน",
-  "name_error": "ชื่อควรมีอย่างน้อย 2 ตัวอักษร",
-  "surname_error": "นามสกุลควรมีอย่างน้อย 2 ตัวอักษร",
-  "phone_error": "เบอร์โทรศัพท์ควรมี 10 หลัก",
+  "name_invalid_error": "กรุณากรอกชื่อด้วยตัวอักษรและช่องว่างเท่านั้น",
+  "surname_invalid_error": "กรุณากรอกนามสกุลด้วยตัวอักษรและช่องว่างเท่านั้น",
+  "name_error": "ชื่อควรมีความยาวอย่างน้อย 2 ตัวอักษร",
+  "surname_error": "นามสกุลควรมีความยาวอย่างน้อย 2 ตัวอักษร",
+  "phone_error": "หมายเลขโทรศัพท์ไม่ถูกต้อง กรุณากรอกใหม่",
   "email_error": "รูปแบบอีเมลไม่ถูกต้อง",
-  "password_error": "รหัสผ่านไม่ตรงกัน",
-  "success_message": "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ.",
+  "password_error": "รหัสผ่านไม่ตรงกัน โปรดตรวจสอบ",
+  "success_message": "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ",
   "error_message": "เกิดข้อผิดพลาด",
-  "email_phone_exists": "อีเมลหรือเบอร์โทรศัพท์นี้มีอยู่แล้ว",
+  "email_phone_exists": "อีเมลหรือเบอร์โทรศัพท์นี้มีผู้ใช้งานแล้ว",
 
   "error": "ข้อผิดพลาด",
   "success": "สำเร็จ",
@@ -165,8 +167,8 @@
   "profile_update_failed": "ไม่สามารถอัปเดตโปรไฟล์ได้",
 
   "change_password": "เปลี่ยนรหัสผ่าน",
-  "password_changed": "เปลี่ยนรหัสผ่านแล้ว",
-  "password_changed_success": "รหัสผ่านของคุณถูกเปลี่ยนเรียบร้อยแล้ว",
+  "password_changed": "เปลี่ยนรหัสผ่านสำเร็จ",
+  "password_changed_success": "กรุณาใช้รหัสผ่านใหม่ในการเข้าสู่ระบบครั้งต่อไป",
   
   "current_password": "รหัสผ่านปัจจุบัน",
   "new_password": "รหัสผ่านใหม่",
@@ -206,7 +208,7 @@
   "addSerialNumber": "เพิ่มหมายเลขซีเรียล",
   "enterDeviceSerialNumber": "กรอกหมายเลขซีเรียลของอุปกรณ์",
   "pleaseEnterSerialNumber": "กรุณากรอกหมายเลขซีเรียล",
-  "addSerialNumberSuccess": "เพิ่มหมายเลขซีเรียลสำเร็จ",
+  "addSerialNumberSuccess": "เพิ่มอุปกรณ์สำเร็จ",
   "bakeRice": "อบข้าว",
   "initialHumidity": "ค่าความชื้นเริ่มต้น",
   "pleaseEnterInitialHumidity": "กรุณากรอกค่าความชื้นเริ่มต้น",
@@ -219,5 +221,7 @@
   "current_": "ค่าปัจจุบัน",
   "target_": "ค่าที่ตั้งไว้ :",
   "detail_": "รายละเอียด :",
-  "failedToDeleteDevice": "ล้มเหลวในการลบอุปกรณ์"
+  "failedToDeleteDevice": "ล้มเหลวในการลบอุปกรณ์",
+  "serialInvalid": "หมายเลขซีเรียลไม่ถูกต้อง",
+  "serialAlreadyUsed": "หมายเลขซีเรียลนี้ถูกใช้งานไปแล้ว"
 }

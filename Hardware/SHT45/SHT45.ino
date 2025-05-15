@@ -2,12 +2,12 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArtronShop_SHT45.h>
-#include <time.h> // Include library for time functions
+#include <time.h>
 
 // ----------------- WiFi & MQTT Config -----------------
 const char *ssid = "!";
 const char *password = "!!!!!!!!";
-const char *mqtt_server = "192.168.33.87"; // เปลี่ยนเป็น IP ของ MQTT broker
+const char *mqtt_server = "192.168.33.87";
 const int mqtt_port = 1883;
 const char *mqtt_topic = "sensor/data";
 
@@ -26,6 +26,19 @@ ArtronShop_SHT45 sht45_back(&I2C_back, 0x44);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+// ----------------- Time (NTP) -----------------
+const char* ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 7 * 3600;
+const int daylightOffset_sec = 0;
+
+// ----------------- Watchdog -----------------
+hw_timer_t *watchdogTimer = NULL;
+#define WDT_TIMEOUT_SEC 8  // รีเซ็ตหากค้างเกิน 8 วิ
+
+void IRAM_ATTR resetModule() {
+  esp_restart();
+}
+
 // ----------------- Functions -----------------
 bool measureWithRetry(ArtronShop_SHT45 &sensor, float &temp, float &hum) {
   for (int i = 0; i < 3; i++) {
@@ -40,13 +53,22 @@ bool measureWithRetry(ArtronShop_SHT45 &sensor, float &temp, float &hum) {
 }
 
 void connectWiFi() {
-  Serial.print("Connecting to WiFi...");
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  Serial.print("Connecting to WiFi");
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry < 20) {
     delay(500);
     Serial.print(".");
+    retry++;
   }
-  Serial.println("\nWiFi connected. IP: " + WiFi.localIP().toString());
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWiFi connected: " + WiFi.localIP().toString());
+  } else {
+    Serial.println("\nFailed to connect to WiFi, restarting...");
+    delay(1000);
+    ESP.restart();
+  }
 }
 
 void reconnectMQTT() {
@@ -63,40 +85,52 @@ void reconnectMQTT() {
   }
 }
 
-// Function to get current timestamp in milliseconds
-unsigned long getCurrentTimeMillis() {
-  return millis();
+unsigned long getUnixTime() {
+  time_t now;
+  time(&now);
+  return now;
+}
+
+void setupWatchdog() {
+  watchdogTimer = timerBegin(0, 80, true);              // 80 MHz / 80 = 1 MHz → 1 tick = 1us
+  timerAttachInterrupt(watchdogTimer, &resetModule, true);
+  timerAlarmWrite(watchdogTimer, WDT_TIMEOUT_SEC * 1000000, false); // in microseconds
+  timerAlarmEnable(watchdogTimer);
 }
 
 // ----------------- Setup -----------------
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Serial.println("\n--- Starting SHT45 + MQTT with Timestamp ---");
+  Serial.println("\n--- Starting SHT45 + MQTT + Watchdog ---");
 
   connectWiFi();
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   client.setServer(mqtt_server, mqtt_port);
 
   I2C_front.begin(FRONT_SDA, FRONT_SCL);
   I2C_back.begin(BACK_SDA, BACK_SCL);
 
-  if (!sht45_front.begin()) {
-    Serial.println("ERROR: Front sensor not found");
-  } else {
-    Serial.println("Front sensor OK");
-  }
+  if (!sht45_front.begin()) Serial.println("ERROR: Front sensor not found");
+  else Serial.println("Front sensor OK");
 
-  if (!sht45_back.begin()) {
-    Serial.println("ERROR: Back sensor not found");
-  } else {
-    Serial.println("Back sensor OK");
-  }
+  if (!sht45_back.begin()) Serial.println("ERROR: Back sensor not found");
+  else Serial.println("Back sensor OK");
+
+  setupWatchdog();
 
   Serial.println("--- Setup Complete ---\n");
 }
 
 // ----------------- Loop -----------------
 void loop() {
+  timerWrite(watchdogTimer, 0);  // รีเซ็ต watchdog ทุกครั้งที่ loop ไม่ค้าง
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi lost. Reconnecting...");
+    connectWiFi();
+  }
+
   if (!client.connected()) reconnectMQTT();
   client.loop();
 
@@ -106,33 +140,17 @@ void loop() {
   bool frontOK = measureWithRetry(sht45_front, tf, rhf);
   bool backOK  = measureWithRetry(sht45_back, tb, rhb);
 
-  Serial.println("=== Sensor Readings ===");
-
-  if (frontOK) {
-    Serial.print("Front Temp: "); Serial.print(tf); Serial.print(" C, ");
-    Serial.print("Humidity: "); Serial.print(rhf); Serial.println(" %");
-  } else {
-    Serial.println("Failed to read front sensor");
-  }
-
-  if (backOK) {
-    Serial.print("Back Temp : "); Serial.print(tb); Serial.print(" C, ");
-    Serial.print("Humidity: "); Serial.print(rhb); Serial.println(" %");
-  } else {
-    Serial.println("Failed to read back sensor");
-  }
-
   if (frontOK && backOK) {
-    unsigned long timestamp = getCurrentTimeMillis();
-    char payload[250]; // Increased buffer size to accommodate timestamp
+    unsigned long timestamp = getUnixTime();
+    char payload[250];
     snprintf(payload, sizeof(payload),
              "{\"timestamp\":%lu,\"front_temp\":%.2f,\"front_humidity\":%.2f,\"back_temp\":%.2f,\"back_humidity\":%.2f}",
              timestamp, tf, rhf, tb, rhb);
     client.publish(mqtt_topic, payload);
-    Serial.print("MQTT Sent: ");
-    Serial.println(payload);
+    Serial.println("MQTT Sent: " + String(payload));
+  } else {
+    Serial.println("Sensor error: frontOK=" + String(frontOK) + " backOK=" + String(backOK));
   }
 
-  Serial.println("========================\n");
   delay(2000);
 }

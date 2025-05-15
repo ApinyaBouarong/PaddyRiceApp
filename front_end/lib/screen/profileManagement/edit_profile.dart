@@ -134,6 +134,13 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
           'phone_number': _phoneController.text.trim(),
         }),
       );
+      print('BODY: ${jsonEncode({
+            'name': _nameController.text.trim(),
+            'surname': _surnameController.text.trim(),
+            'email': _emailController.text.trim(),
+            'phone_number': _phoneController.text.trim(),
+          })}');
+      print('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         _showDialog(
