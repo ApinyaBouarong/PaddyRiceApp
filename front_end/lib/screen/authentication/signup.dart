@@ -72,6 +72,22 @@ class _SignupRouteState extends State<SignupRoute> {
     _confirmPasswordFocusNode.addListener(() {
       setState(() {});
     });
+
+    _nameController.addListener(() {
+      if (_isNameError) {
+        setState(() {
+          _isNameError = false;
+        });
+      }
+    });
+
+    _surnameController.addListener(() {
+      if (_isSurnameError) {
+        setState(() {
+          _isSurnameError = false;
+        });
+      }
+    });
   }
 
   @override
@@ -129,29 +145,105 @@ class _SignupRouteState extends State<SignupRoute> {
   }
 
   bool _validateFields() {
-    setState(() {
-      _isNameError = _nameController.text.length < 2;
-      _isSurnameError = _surnameController.text.length < 2;
-      _isPhoneError = !phoneRegex.hasMatch(_phoneController.text);
-      _isEmailError = !emailRegex.hasMatch(_emailController.text);
-      _isPasswordError =
-          _passwordController.text != _confirmPasswordController.text ||
-              _passwordController.text.isEmpty;
-      _isConfirmPasswordError = _confirmPasswordController.text.isEmpty ||
-          _passwordController.text != _confirmPasswordController.text;
-    });
+    // เริ่มตรวจสอบทีละฟิลด์จากบนลงล่าง
 
-    if (_isEmailError || _isPhoneError) {
-      _showErrorDialog(S.of(context)!.email_phone_exists);
+    // ตรวจสอบชื่อ
+    if (_nameController.text.isEmpty) {
+      setState(() {
+        _isNameError = true;
+      });
+      _showErrorDialog(S.of(context)!.name_error);
       return false;
     }
 
-    return !(_isNameError ||
-        _isSurnameError ||
-        _isPhoneError ||
-        _isEmailError ||
-        _isPasswordError ||
-        _isConfirmPasswordError);
+    if (!nameRegex.hasMatch(_nameController.text)) {
+      setState(() {
+        _isNameError = true;
+      });
+      _showErrorDialog(S.of(context)!.name_invalid_error);
+      return false;
+    }
+
+    // ตรวจสอบนามสกุล
+    if (_surnameController.text.isEmpty) {
+      setState(() {
+        _isSurnameError = true;
+      });
+      _showErrorDialog(S.of(context)!.surname_error);
+      return false;
+    }
+
+    if (!nameRegex.hasMatch(_surnameController.text)) {
+      setState(() {
+        _isSurnameError = true;
+      });
+      _showErrorDialog(S.of(context)!.surname_invalid_error);
+      return false;
+    }
+
+    // ตรวจสอบเบอร์โทรศัพท์
+    if (_phoneController.text.isEmpty) {
+      setState(() {
+        _isPhoneError = true;
+      });
+      _showErrorDialog(S.of(context)!.phone_error);
+      return false;
+    }
+
+    if (!phoneRegex.hasMatch(_phoneController.text)) {
+      setState(() {
+        _isPhoneError = true;
+      });
+      _showErrorDialog(S.of(context)!.phone_error);
+      return false;
+    }
+
+    // ตรวจสอบอีเมล
+    if (_emailController.text.isEmpty) {
+      setState(() {
+        _isEmailError = true;
+      });
+      _showErrorDialog(S.of(context)!.email_error);
+      return false;
+    }
+
+    if (!emailRegex.hasMatch(_emailController.text)) {
+      setState(() {
+        _isEmailError = true;
+      });
+      _showErrorDialog(S.of(context)!.email_error);
+      return false;
+    }
+
+    // ตรวจสอบรหัสผ่าน
+    if (_passwordController.text.isEmpty) {
+      setState(() {
+        _isPasswordError = true;
+      });
+      _showErrorDialog(S.of(context)!.password_error);
+      return false;
+    }
+
+    // ตรวจสอบยืนยันรหัสผ่าน
+    if (_confirmPasswordController.text.isEmpty) {
+      setState(() {
+        _isConfirmPasswordError = true;
+      });
+      _showErrorDialog(S.of(context)!.password_error);
+      return false;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _isPasswordError = true;
+        _isConfirmPasswordError = true;
+      });
+      _showErrorDialog(S.of(context)!.password_error);
+      return false;
+    }
+
+    // ถ้าผ่านทุกการตรวจสอบ ให้คืนค่า true
+    return true;
   }
 
   Future<void> signup() async {
@@ -160,34 +252,42 @@ class _SignupRouteState extends State<SignupRoute> {
         isLoading = true;
       });
 
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/signup'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'name': _nameController.text,
-          'surname': _surnameController.text,
-          'phone': _phoneController.text,
-          'email': _emailController.text,
-          'password': _passwordController.text,
-        }),
-      );
+      try {
+        final response = await http.post(
+          Uri.parse('${ApiConstants.baseUrl}/signup'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'name': _nameController.text,
+            'surname': _surnameController.text,
+            'phone': _phoneController.text,
+            'email': _emailController.text,
+            'password': _passwordController.text,
+          }),
+        );
 
-      setState(() {
-        isLoading = false;
-      });
+        setState(() {
+          isLoading = false;
+        });
 
-      if (response.statusCode == 201) {
-        _showSuccessDialog(S.of(context)!.success_message);
-      } else if (response.statusCode == 409) {
-        _showErrorDialog(S.of(context)!.email_phone_exists);
-      } else {
-        _showErrorDialog(S.of(context)!.error);
+        if (response.statusCode == 201) {
+          _showSuccessDialog(S.of(context)!.success_message);
+        } else if (response.statusCode == 409) {
+          _showErrorDialog(S.of(context)!.email_phone_exists);
+        } else {
+          _showErrorDialog(S.of(context)!.error);
+        }
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        _showErrorDialog(S.of(context)!.network_error);
       }
     }
   }
 
   final phoneRegex = RegExp(r'^[0-9]{10}$');
   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+  // เพิ่มเติม RegEx สำหรับชื่อและนามสกุล อนุญาตเฉพาะตัวอักษรภาษาอังกฤษ ภาษาไทย และช่องว่างเท่านั้น
   final nameRegex = RegExp(r'^[a-zA-Z\u0E00-\u0E7F\s]+$');
 
   @override
@@ -230,20 +330,20 @@ class _SignupRouteState extends State<SignupRoute> {
                   suffixIcon: Icons.clear,
                   obscureText: false,
                   isError: _isNameError,
-                  errorMessage: S.of(context)!.name_error,
+                  errorMessage: S.of(context)!.name_invalid_error,
                   onSuffixIconPressed: () {
                     _nameController.clear();
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return S.of(context)!.name_error;
-                    }
-                    if (!nameRegex.hasMatch(value)) {
-                      setState(() {
-                        _isNameError = true;
-                      });
                       return S.of(context)!.name_invalid_error;
                     }
+                    // if (!nameRegex.hasMatch(value)) {
+                    //   setState(() {
+                    //     _isNameError = true;
+                    //   });
+                    //   return S.of(context)!.name_invalid_error;
+                    // }
                     setState(() {
                       _isNameError = false;
                     });
@@ -258,26 +358,20 @@ class _SignupRouteState extends State<SignupRoute> {
                   suffixIcon: Icons.clear,
                   obscureText: false,
                   isError: _isSurnameError,
-                  errorMessage: S.of(context)!.surname_error,
+                  errorMessage: S.of(context)!.surname_invalid_error,
                   onSuffixIconPressed: () {
                     _surnameController.clear();
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return S.of(context)!.surname_error;
-                    }
-                    if (!nameRegex.hasMatch(value)) {
-                      setState(() {
-                        _isSurnameError = true;
-                      });
                       return S.of(context)!.surname_invalid_error;
                     }
-                    if (!nameRegex.hasMatch(value)) {
-                      setState(() {
-                        _isSurnameError = true;
-                      });
-                      return S.of(context)!.surname_invalid_error;
-                    }
+                    // if (!nameRegex.hasMatch(value)) {
+                    //   setState(() {
+                    //     _isSurnameError = true;
+                    //   });
+                    //   return S.of(context)!.surname_invalid_error;
+                    // }
                     setState(() {
                       _isSurnameError = false;
                     });

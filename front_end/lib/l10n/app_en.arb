@@ -142,6 +142,7 @@
   "please_enter_device_name": "Please enter device name",
   "please_enter_front_temp": "Please enter front_temp",
   "please_enter_back_temp": "Please enter back_temp",
+  "special_char_error": "Special characters are not allowed. Please enter again",
 
   "allow_notifications": "Allow notifications",
 
@@ -221,6 +222,6 @@
   "target_": "Target :",
   "detail_": "Detail :",
   "failedToDeleteDevice": "Failed to delete device",
-  "serialInvalid": "Invalid serial number.",
+  "serialInvalid": "Invalid serial number. Please check and try again.",
   "serialAlreadyUsed": "This serial number has already been used."
 }

@@ -12,7 +12,7 @@ class CustomTextField extends StatefulWidget {
   final String errorMessage;
   final void Function()? onSuffixIconPressed;
   final String? Function(String?)? validator;
-  final void Function(String)? onChanged; // Add this line
+  final void Function(String)? onChanged;
 
   CustomTextField({
     required this.controller,
@@ -24,7 +24,7 @@ class CustomTextField extends StatefulWidget {
     required this.errorMessage,
     this.onSuffixIconPressed,
     this.validator,
-    this.onChanged, // Add this line
+    this.onChanged,
   });
 
   @override

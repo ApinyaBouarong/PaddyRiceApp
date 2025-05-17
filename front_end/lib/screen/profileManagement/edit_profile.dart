@@ -52,6 +52,13 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
   bool isLoading = false;
   String? _imagePath;
 
+  // Regular expressions for validation
+  final _nameRegex = RegExp(
+      r'^[a-zA-Zก-๙\s]+$'); // Allow only letters and spaces (Thai and English)
+  final _emailRegex =
+      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
+  final _phoneRegex = RegExp(r'^[0-9]{10}$');
+
   @override
   void initState() {
     super.initState();
@@ -300,6 +307,8 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
             return S.of(context)!.name_error;
           } else if (value.length < 2) {
             return S.of(context)!.name_error;
+          } else if (!_nameRegex.hasMatch(value)) {
+            return S.of(context)!.special_char_error;
           }
           return null;
         },
@@ -322,6 +331,8 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
             return S.of(context)!.surname_error;
           } else if (value.length < 2) {
             return S.of(context)!.surname_error;
+          } else if (!_nameRegex.hasMatch(value)) {
+            return S.of(context)!.special_char_error;
           }
           return null;
         },
@@ -342,9 +353,7 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
             return S.of(context)!.email_error;
-          } else if (!RegExp(
-                  r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
-              .hasMatch(value)) {
+          } else if (!_emailRegex.hasMatch(value)) {
             return S.of(context)!.email_error;
           }
           return null;
@@ -366,7 +375,7 @@ class _EditProfileRouteState extends State<EditProfileRoute> {
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
             return S.of(context)!.phone_error;
-          } else if (value.length != 10) {
+          } else if (!_phoneRegex.hasMatch(value)) {
             return S.of(context)!.phone_error;
           }
           return null;
@@ -454,7 +463,6 @@ class ShDialog extends StatelessWidget {
             ),
             SizedBox(height: 30),
             Center(
-              // ใช้ Center เพื่อจัดปุ่ม OK ให้อยู่ตรงกลาง
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: buttoncolor,

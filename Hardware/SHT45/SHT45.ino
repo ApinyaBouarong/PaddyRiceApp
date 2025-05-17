@@ -3,6 +3,8 @@
 #include <PubSubClient.h>
 #include <ArtronShop_SHT45.h>
 #include <time.h>
+#include "esp_task_wdt.h"
+#include <LiquidCrystal_I2C.h>
 
 // ----------------- WiFi & MQTT Config -----------------
 const char *ssid = "!";
@@ -18,25 +20,33 @@ const char *mqtt_topic = "sensor/data";
 #define BACK_SCL 19
 
 TwoWire I2C_front = TwoWire(0);
-TwoWire I2C_back = TwoWire(1);
+TwoWire I2C_back  = TwoWire(1);
 ArtronShop_SHT45 sht45_front(&I2C_front, 0x44);
 ArtronShop_SHT45 sht45_back(&I2C_back, 0x44);
+
+// ----------------- LCD Config -----------------
+#define LCD_SDA 25
+#define LCD_SCL 26
+#define LCD_I2C_ADDRESS 0x27
+
+TwoWire I2C_lcd = TwoWire(2);
+LiquidCrystal_I2C lcd(LCD_I2C_ADDRESS, 20, 4);
 
 // ----------------- MQTT -----------------
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-// ----------------- Time (NTP) -----------------
-const char* ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = 7 * 3600;
-const int daylightOffset_sec = 0;
-
 // ----------------- Watchdog -----------------
-hw_timer_t *watchdogTimer = NULL;
-#define WDT_TIMEOUT_SEC 8  // รีเซ็ตหากค้างเกิน 8 วิ
+#define WDT_TIMEOUT_SEC 8
 
-void IRAM_ATTR resetModule() {
-  esp_restart();
+void setupWatchdog() {
+  esp_task_wdt_config_t config = {
+    .timeout_ms = WDT_TIMEOUT_SEC * 1000,
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+    .trigger_panic = true
+  };
+  esp_task_wdt_init(&config);
+  esp_task_wdt_add(NULL);
 }
 
 // ----------------- Functions -----------------
@@ -53,22 +63,13 @@ bool measureWithRetry(ArtronShop_SHT45 &sensor, float &temp, float &hum) {
 }
 
 void connectWiFi() {
+  Serial.print("Connecting to WiFi...");
   WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi");
-  int retry = 0;
-  while (WiFi.status() != WL_CONNECTED && retry < 20) {
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
-    retry++;
   }
-
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\nWiFi connected: " + WiFi.localIP().toString());
-  } else {
-    Serial.println("\nFailed to connect to WiFi, restarting...");
-    delay(1000);
-    ESP.restart();
-  }
+  Serial.println("\nWiFi connected. IP: " + WiFi.localIP().toString());
 }
 
 void reconnectMQTT() {
@@ -85,31 +86,45 @@ void reconnectMQTT() {
   }
 }
 
-unsigned long getUnixTime() {
+void setupTime() {
+  setenv("TZ", "ICT-7", 1); // ICT = UTC+7
+  tzset();
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+  Serial.print("Waiting for NTP time");
+  while (time(nullptr) < 100000) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println("\nTime initialized.");
+}
+
+unsigned long getCurrentTimestamp() {
   time_t now;
   time(&now);
   return now;
 }
 
-void setupWatchdog() {
-  watchdogTimer = timerBegin(0, 80, true);              // 80 MHz / 80 = 1 MHz → 1 tick = 1us
-  timerAttachInterrupt(watchdogTimer, &resetModule, true);
-  timerAlarmWrite(watchdogTimer, WDT_TIMEOUT_SEC * 1000000, false); // in microseconds
-  timerAlarmEnable(watchdogTimer);
+String getTimeStringFromTimestamp(time_t rawTime) {
+  struct tm * timeinfo = localtime(&rawTime);
+  char buffer[30];
+  strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", timeinfo);
+  return String(buffer);
 }
 
 // ----------------- Setup -----------------
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Serial.println("\n--- Starting SHT45 + MQTT + Watchdog ---");
+  Serial.println("\n--- Starting SHT45 + MQTT + LCD ---");
 
   connectWiFi();
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  setupTime();
+  setupWatchdog();
   client.setServer(mqtt_server, mqtt_port);
 
-  I2C_front.begin(FRONT_SDA, FRONT_SCL);
-  I2C_back.begin(BACK_SDA, BACK_SCL);
+  I2C_front.begin(FRONT_SDA, FRONT_SCL, 400000);
+  I2C_back.begin(BACK_SDA, BACK_SCL, 400000);
+  I2C_lcd.begin(LCD_SDA, LCD_SCL, 400000); // เริ่ม I2C บัสจอ LCD
 
   if (!sht45_front.begin()) Serial.println("ERROR: Front sensor not found");
   else Serial.println("Front sensor OK");
@@ -117,20 +132,17 @@ void setup() {
   if (!sht45_back.begin()) Serial.println("ERROR: Back sensor not found");
   else Serial.println("Back sensor OK");
 
-  setupWatchdog();
+  lcd.begin();          // จอขนาด 20x4
+  lcd.setBacklight(HIGH);    // เปิด backlight
+  lcd.setCursor(0, 0);
+  lcd.print("SHT45 Sensor Ready");
 
   Serial.println("--- Setup Complete ---\n");
 }
 
 // ----------------- Loop -----------------
 void loop() {
-  timerWrite(watchdogTimer, 0);  // รีเซ็ต watchdog ทุกครั้งที่ loop ไม่ค้าง
-
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi lost. Reconnecting...");
-    connectWiFi();
-  }
-
+  esp_task_wdt_reset();
   if (!client.connected()) reconnectMQTT();
   client.loop();
 
@@ -140,17 +152,43 @@ void loop() {
   bool frontOK = measureWithRetry(sht45_front, tf, rhf);
   bool backOK  = measureWithRetry(sht45_back, tb, rhb);
 
+  Serial.println("=== Sensor Readings ===");
+
+  if (frontOK) {
+    Serial.print("Front Temp: "); Serial.print(tf); Serial.print(" C, ");
+    Serial.print("Humidity: "); Serial.print(rhf); Serial.println(" %");
+  } else Serial.println("Failed to read front sensor");
+
+  if (backOK) {
+    Serial.print("Back Temp : "); Serial.print(tb); Serial.print(" C, ");
+    Serial.print("Humidity: "); Serial.print(rhb); Serial.println(" %");
+  } else Serial.println("Failed to read back sensor");
+
   if (frontOK && backOK) {
-    unsigned long timestamp = getUnixTime();
-    char payload[250];
+    unsigned long timestamp = getCurrentTimestamp();
+    String timeThai = getTimeStringFromTimestamp(timestamp);
+
+    char payload[300];
     snprintf(payload, sizeof(payload),
-             "{\"timestamp\":%lu,\"front_temp\":%.2f,\"front_humidity\":%.2f,\"back_temp\":%.2f,\"back_humidity\":%.2f}",
-             timestamp, tf, rhf, tb, rhb);
+             "{\"timestamp\":%lu,\"front_temp\":%.2f,\"front_humidity\":%.2f,\"back_temp\":%.2f,\"back_humidity\":%.2f,\"time_thai\":\"%s\"}",
+             timestamp, tf, rhf, tb, rhb, timeThai.c_str());
     client.publish(mqtt_topic, payload);
-    Serial.println("MQTT Sent: " + String(payload));
-  } else {
-    Serial.println("Sensor error: frontOK=" + String(frontOK) + " backOK=" + String(backOK));
+    Serial.print("MQTT Sent: ");
+    Serial.println(payload);
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Time:");
+    lcd.setCursor(6, 0);
+    lcd.print(timeThai.substring(11)); // HH:MM:SS
+
+    lcd.setCursor(0, 1);
+    lcd.printf("F T: %.1fC H: %.1f%%", tf, rhf);
+
+    lcd.setCursor(0, 2);
+    lcd.printf("B T: %.1fC H: %.1f%%", tb, rhb);
   }
 
+  Serial.println("========================\n");
   delay(2000);
 }
